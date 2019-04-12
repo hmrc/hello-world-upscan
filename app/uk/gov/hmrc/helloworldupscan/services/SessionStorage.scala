@@ -14,18 +14,29 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.helloworldupscan.config
+package uk.gov.hmrc.helloworldupscan.services
 
-import javax.inject.{Inject, Singleton}
+import java.util.concurrent.atomic.AtomicReference
 
-import play.api.i18n.MessagesApi
-import play.api.mvc.Request
-import play.twirl.api.Html
-import uk.gov.hmrc.play.bootstrap.http.FrontendErrorHandler
-import uk.gov.hmrc.helloworldupscan.views
+import javax.inject.Singleton
+
+case class UploadedFile(id : String, name : String)
 
 @Singleton
-class ErrorHandler @Inject()(val messagesApi: MessagesApi, implicit val appConfig: AppConfig) extends FrontendErrorHandler {
-  override def standardErrorTemplate(pageTitle: String, heading: String, message: String)(implicit request: Request[_]): Html =
-    views.html.error_template(pageTitle, heading, message)
+class SessionStorage {
+
+  val storage: AtomicReference[Option[UploadedFile]] = new AtomicReference[Option[UploadedFile]](None)
+
+  def requestUpload(fileReference : String): Unit = {
+
+  }
+
+  def registerUploadResult(uploadedFile : UploadedFile): Unit = {
+    storage.set(Some(uploadedFile))
+  }
+
+  def getUploadResult: Option[UploadedFile] = {
+    storage.get()
+  }
+
 }

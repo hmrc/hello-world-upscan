@@ -15,14 +15,25 @@
  *@
 
 @import uk.gov.hmrc.helloworldupscan.config.AppConfig
-@(pageTitle: String, heading: String, message: String)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
+@import uk.gov.hmrc.helloworldupscan.services.UploadedFile
+@(status : Option[UploadedFile])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
-@contentHeader = {
-  <h1>@heading</h1>
+@refreshHeader = {
+ <meta http-equiv="refresh" content="1"/>
 }
 
-@mainContent = {
-  <p>@message</p>
+@main_template(title = "Hello from hello-world-upscan", bodyClasses = None, customHead = {
+status match {
+case Some(status) => None
+case None => Some(refreshHeader)
 }
+}) {
+    <h1>Hello from hello-world-upscan !</h1>
 
-@govuk_wrapper(appConfig = appConfig, title = pageTitle, contentHeader = Some(contentHeader), mainContent = mainContent)
+    @status match {
+     case Some(status) => { Upload of <b>@status.name</b> successful! }
+     case None => { Waiting for the file to be scanned }
+    }
+
+
+}

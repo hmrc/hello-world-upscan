@@ -1,3 +1,8 @@
 # microservice specific routes
 
-GET        /hello-world             uk.gov.hmrc.helloworldupscan.controllers.HelloWorld.helloWorld
+#Actual microservice
+GET        /hello-world                 uk.gov.hmrc.helloworldupscan.controllers.UploadFormController.show
+GET        /hello-world/result          uk.gov.hmrc.helloworldupscan.controllers.UploadFormController.showResult
+
+#Mocked functionality of upscan
+POST       /upscan/upload               uk.gov.hmrc.upscan.controllers.UpscanController.upload
