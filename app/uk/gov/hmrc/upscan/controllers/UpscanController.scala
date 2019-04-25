@@ -31,10 +31,11 @@ import scala.concurrent.Future
 @Singleton
 class UpscanController @Inject()(val messagesApi: MessagesApi, val upscan : Upscan, implicit val appConfig: AppConfig) extends BaseController {
 
-  case class UploadForm(redirectOnSuccess : Option[String])
+  case class UploadForm(fileReference : String, redirectOnSuccess : Option[String])
 
   val userForm = Form(
     mapping(
+      "fileReference" -> text,
       "redirectOnSuccess" -> optional(text)
     )(UploadForm.apply)(UploadForm  .unapply)
   )
@@ -45,12 +46,14 @@ class UpscanController @Inject()(val messagesApi: MessagesApi, val upscan : Upsc
 
       userForm.bindFromRequest().fold(
         errors => {
-          Future.successful(BadRequest("Problem with a form"))
+          Future.successful(BadRequest(s"Problem with a form $errors"))
         },
         form => {
-          val filename = file.filename
-          val contentType = file.contentType
-          upscan.handleUpload(filename, file.ref)
+          val metadata =  request.body.dataParts
+            .filterKeys(_.startsWith("x-amz-meta-"))
+            .map(entry => entry._1.substring("x-amz-meta-".length) -> entry._2.head)
+
+          upscan.handleUpload(form.fileReference, file.filename, file.contentType, file.ref, metadata)
           Future.successful(form.redirectOnSuccess.fold(NoContent)(Redirect(_)))
         }
       )

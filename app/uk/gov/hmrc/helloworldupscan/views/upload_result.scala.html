@@ -15,24 +15,40 @@
  *@
 
 @import uk.gov.hmrc.helloworldupscan.config.AppConfig
-@import uk.gov.hmrc.helloworldupscan.services.UploadedFile
-@(status : Option[UploadedFile])(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
+@import uk.gov.hmrc.helloworldupscan.services._
+@(uploadId: UploadId, status : UploadStatus)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 @refreshHeader = {
  <meta http-equiv="refresh" content="1"/>
 }
 
-@main_template(title = "Hello from hello-world-upscan", bodyClasses = None, customHead = {
+@main_template(title = "Verifying uploaded file", bodyClasses = None, customHead = {
 status match {
-case Some(status) => None
-case None => Some(refreshHeader)
+case InProgress => Some(refreshHeader)
+case _ => None
 }
 }) {
-    <h1>Hello from hello-world-upscan !</h1>
+    <h1>Verifying uploaded file</h1>
 
     @status match {
-     case Some(status) => { Upload of <b>@status.name</b> successful! }
-     case None => { Waiting for the file to be scanned }
+     case InProgress => { Waiting for the file to be scanned }
+     case s : UploadedSuccessfully => { Upload of <b>@s.name</b> successful! }
+     case Failed => { File has been rejected. }
+    }
+
+    @status match {
+        case s : UploadedSuccessfully => {
+            <div class="section">
+                <a href="@uk.gov.hmrc.helloworldupscan.controllers.routes.UploadFormController.showSubmissionForm(uploadId)">
+                    <button class="button">Next</button>
+                </a>
+            </div>
+        }
+        case _ => {
+            <div class="section">
+                <button class="button" disabled="disabled">Next</button>
+            </div>
+        }
     }
 
 

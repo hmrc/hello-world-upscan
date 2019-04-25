@@ -20,7 +20,7 @@ import java.util.UUID
 
 import akka.actor.ActorSystem
 import javax.inject.Inject
-import uk.gov.hmrc.helloworldupscan.services.{UploadedFile, UpscanCallbackDispatcher}
+import uk.gov.hmrc.helloworldupscan.services.UpscanCallbackDispatcher
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
@@ -29,23 +29,36 @@ case class UpscanFileReference(reference : String)
 
 case class UpscanInitiateResponse(fileReference: UpscanFileReference, postTarget : String, formFields : Map[String, String])
 
+case class UploadCallback(fileReference : UpscanFileReference, name : String, mimeType : String, downloadUrl : String, metadata : Map[String, String])
+
 class Upscan @Inject()(callbackDispatcher : UpscanCallbackDispatcher, actorSystem : ActorSystem, implicit val ec : ExecutionContext) {
 
-  def initiate(redirectOnSuccess : Option[String]) : UpscanInitiateResponse = {
+  def initiate(redirectOnSuccess : Option[String], metadataFields : Map[String, String]) : UpscanInitiateResponse = {
 
-    val formFields = Map.empty[String,String] ++ redirectOnSuccess.map("redirectOnSuccess" -> _)
+    val fileReference = UpscanFileReference(UUID.randomUUID().toString)
+
+    val formFields = Map.empty[String,String] ++
+      redirectOnSuccess.map("redirectOnSuccess" -> _) ++
+      metadataFields.map(entry => s"x-amz-meta-${entry._1}" -> entry._2) +
+      ("fileReference" -> fileReference.reference)
+
 
     UpscanInitiateResponse(
-      fileReference = UpscanFileReference(UUID.randomUUID().toString),
+      fileReference = fileReference,
       postTarget = uk.gov.hmrc.upscan.controllers.routes.UpscanController.upload().url,
       formFields
     )
 
   }
 
-  def handleUpload(filename : String, file : play.api.libs.Files.TemporaryFile): Unit = {
+  def handleUpload(fileReference : String, filename : String, mimeType : Option[String], file : play.api.libs.Files.TemporaryFile,
+                   metadataFields: Map[String, String]): Unit = {
 
-    val uploadedFile = UploadedFile("XX", filename)
+    val uploadedFile = UploadCallback(
+      UpscanFileReference(fileReference),
+      filename,
+      mimeType.getOrElse("application/xml"), s"http://localhost:9000/${fileReference}",
+      metadataFields)
 
     actorSystem.scheduler.scheduleOnce(3 seconds) {
       callbackDispatcher.handleCallback(uploadedFile)

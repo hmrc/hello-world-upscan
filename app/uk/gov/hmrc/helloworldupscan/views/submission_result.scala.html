@@ -1,4 +1,4 @@
-/*
+@*
  * Copyright 2019 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,19 +12,15 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+ *@
 
-package uk.gov.hmrc.helloworldupscan.services
+@import helper._
+@import uk.gov.hmrc.helloworldupscan.config.AppConfig
+@import uk.gov.hmrc.play.views.html._
+@import uk.gov.hmrc.upscan.services._
+@()(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
+@main_template(title = "Your form has been submitted successfully", bodyClasses = None) {
+    <h1>Your form has been submitted successfully</h1>
 
-import javax.inject.Inject
-import uk.gov.hmrc.upscan.services.UploadCallback
-
-class UpscanCallbackDispatcher @Inject() (sessionStorage: UploadProgressTracker) {
-
-  def handleCallback(callback : UploadCallback): Unit = {
-    val uploadId = UploadId(callback.metadata.getOrElse(UploadProgressTracker.METADATA_UPLOAD_ID, throw new RuntimeException("Missing upload_id field")))
-    val uploadStatus = UploadedSuccessfully(callback.name, callback.mimeType, callback.downloadUrl)
-    sessionStorage.registerUploadResult(uploadId, uploadStatus)
-  }
 
 }
