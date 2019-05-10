@@ -14,21 +14,23 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.helloworldupscan.services
+package uk.gov.hmrc.helloworldupscan.model
 
-import com.google.inject.ImplementedBy
-import uk.gov.hmrc.helloworldupscan.model.{UploadId, UploadStatus}
+import java.util.UUID
 
-import scala.concurrent.Future
+import play.api.mvc.QueryStringBindable
 
+sealed trait UploadStatus
+case object InProgress extends UploadStatus
+case object Failed extends UploadStatus
+case class UploadedSuccessfully(name : String, mimeType : String, downloadUrl : String) extends UploadStatus
 
-@ImplementedBy(classOf[MongoBackedUploadProgressTracker])
-trait UploadProgressTracker {
+case class UploadId(value : String) extends AnyVal
 
-  def requestUpload: Future[UploadId]
+object UploadId {
+  def generate = UploadId(UUID.randomUUID().toString)
 
-  def registerUploadResult(uploadId : UploadId, uploadStatus : UploadStatus): Future[Unit]
-
-  def getUploadResult(id : UploadId): Future[Option[UploadStatus]]
-
+  implicit def queryBinder(implicit stringBinder: QueryStringBindable[String]): QueryStringBindable[UploadId] =
+    stringBinder.transform(UploadId(_),_.value)
 }
+

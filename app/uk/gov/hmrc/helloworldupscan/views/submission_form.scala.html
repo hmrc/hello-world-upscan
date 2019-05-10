@@ -19,6 +19,7 @@
 @import uk.gov.hmrc.play.views.html._
 @import uk.gov.hmrc.upscan.services._
 @import uk.gov.hmrc.helloworldupscan.services._
+@import uk.gov.hmrc.helloworldupscan.model._
 @(form: Form[_], uploadedFile : UploadedSuccessfully)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 @main_template(title = "Hello from hello-world-upscan", bodyClasses = None) {
     <h1>Please fill in additional information</h1>

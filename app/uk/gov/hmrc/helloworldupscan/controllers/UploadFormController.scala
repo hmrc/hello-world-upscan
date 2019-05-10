@@ -24,7 +24,8 @@ import play.api.data.Forms.{mapping, text}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc._
 import uk.gov.hmrc.helloworldupscan.config.AppConfig
-import uk.gov.hmrc.helloworldupscan.services.{UploadId, UploadProgressTracker, UploadedSuccessfully}
+import uk.gov.hmrc.helloworldupscan.model.{UploadId, UploadedSuccessfully}
+import uk.gov.hmrc.helloworldupscan.services.InMemoryUploadProgressTracker
 import uk.gov.hmrc.helloworldupscan.views
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 import uk.gov.hmrc.upscan.services.Upscan
@@ -32,24 +33,30 @@ import uk.gov.hmrc.upscan.services.Upscan
 import scala.concurrent.Future
 
 @Singleton
-class UploadFormController @Inject()(val messagesApi: MessagesApi, val upscan : Upscan, val uploadProgressTracker : UploadProgressTracker, implicit val appConfig: AppConfig) extends FrontendController with I18nSupport {
+class UploadFormController @Inject()(val messagesApi: MessagesApi, val upscan : Upscan, val uploadProgressTracker : InMemoryUploadProgressTracker, implicit val appConfig: AppConfig) extends FrontendController with I18nSupport {
 
   val show = Action.async { implicit request =>
 
-    val uploadId = uploadProgressTracker.requestUpload
+    for (uploadId <- uploadProgressTracker.requestUpload) yield {
+      val upscanInitiateResponse = upscan.initiate(
+        redirectOnSuccess = Some(uk.gov.hmrc.helloworldupscan.controllers.routes.UploadFormController.showResult(uploadId).url),
+        metadataFields = Map(InMemoryUploadProgressTracker.METADATA_UPLOAD_ID -> uploadId.value)
+      )
 
-    val upscanInitiateResponse = upscan.initiate(
-      redirectOnSuccess = Some(uk.gov.hmrc.helloworldupscan.controllers.routes.UploadFormController.showResult(uploadId).url),
-      metadataFields = Map(UploadProgressTracker.METADATA_UPLOAD_ID -> uploadId.value)
-    )
+      Ok(views.html.upload_form(upscanInitiateResponse))
+    }
 
-    Future.successful(Ok(views.html.upload_form(upscanInitiateResponse)))
   }
 
   def showResult(uploadId : UploadId) = Action.async {
     implicit request =>
-      val uploadResult = uploadProgressTracker.getUploadResult(uploadId)
-      Future.successful(Ok(views.html.upload_result(uploadId, uploadResult)))
+      for (uploadResult <- uploadProgressTracker.getUploadResult(uploadId)) yield {
+        uploadResult match {
+          case Some(result) => Ok(views.html.upload_result(uploadId, result))
+          case None => BadRequest(s"Upload with id $uploadId not found")
+        }
+
+      }
   }
 
   case class SampleForm(
@@ -67,9 +74,11 @@ class UploadFormController @Inject()(val messagesApi: MessagesApi, val upscan : 
 
   def showSubmissionForm(uploadId: UploadId) = Action.async { implicit request =>
     val emptyForm = sampleForm.fill(SampleForm("", "", uploadId))
-    uploadProgressTracker.getUploadResult(uploadId) match {
-      case s : UploadedSuccessfully => Future.successful(Ok(views.html.submission_form(emptyForm, s)))
-      case _ => Future.successful(InternalServerError("Something gone wrong"))
+    for (uploadResult <- uploadProgressTracker.getUploadResult(uploadId)) yield {
+      uploadResult match {
+        case Some(s: UploadedSuccessfully) => Ok(views.html.submission_form(emptyForm, s))
+        case _ => InternalServerError("Something gone wrong")
+      }
     }
   }
 

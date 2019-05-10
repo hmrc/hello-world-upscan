@@ -16,6 +16,7 @@
 
 @import uk.gov.hmrc.helloworldupscan.config.AppConfig
 @import uk.gov.hmrc.helloworldupscan.services._
+@import uk.gov.hmrc.helloworldupscan.model._
 @(uploadId: UploadId, status : UploadStatus)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
 @refreshHeader = {

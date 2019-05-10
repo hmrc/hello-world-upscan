@@ -2,9 +2,9 @@
 
 #Actual microservice
 GET        /hello-world                 uk.gov.hmrc.helloworldupscan.controllers.UploadFormController.show
-GET        /hello-world/result          uk.gov.hmrc.helloworldupscan.controllers.UploadFormController.showResult(uploadId : uk.gov.hmrc.helloworldupscan.services.UploadId)
+GET        /hello-world/result          uk.gov.hmrc.helloworldupscan.controllers.UploadFormController.showResult(uploadId : uk.gov.hmrc.helloworldupscan.model.UploadId)
 
-GET        /hello-world/submission-form        uk.gov.hmrc.helloworldupscan.controllers.UploadFormController.showSubmissionForm(uploadId : uk.gov.hmrc.helloworldupscan.services.UploadId)
+GET        /hello-world/submission-form        uk.gov.hmrc.helloworldupscan.controllers.UploadFormController.showSubmissionForm(uploadId : uk.gov.hmrc.helloworldupscan.model.UploadId)
 POST       /hello-world/submission-form        uk.gov.hmrc.helloworldupscan.controllers.UploadFormController.submitFormWithFile
 GET        /hello-world/submission-form/result uk.gov.hmrc.helloworldupscan.controllers.UploadFormController.showSubmissionResult
 
