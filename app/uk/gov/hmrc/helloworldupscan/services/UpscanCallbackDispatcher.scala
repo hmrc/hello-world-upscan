@@ -20,7 +20,7 @@ import javax.inject.Inject
 import uk.gov.hmrc.helloworldupscan.model.{UploadId, UploadedSuccessfully}
 import uk.gov.hmrc.upscan.services.UploadCallback
 
-class UpscanCallbackDispatcher @Inject() (sessionStorage: InMemoryUploadProgressTracker) {
+class UpscanCallbackDispatcher @Inject() (sessionStorage: UploadProgressTracker) {
 
   def handleCallback(callback : UploadCallback): Unit = {
     val uploadId = UploadId(callback.metadata.getOrElse(InMemoryUploadProgressTracker.METADATA_UPLOAD_ID, throw new RuntimeException("Missing upload_id field")))
