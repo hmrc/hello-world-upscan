@@ -31,6 +31,10 @@ class AppConfig @Inject()(val runModeConfiguration: Configuration, environment: 
   private val contactHost = runModeConfiguration.getString(s"contact-frontend.host").getOrElse("")
   private val contactFormServiceIdentifier = "MyService"
 
+  lazy val initiateUrl = baseUrl("upscan-initiate") + "/upscan/initiate"
+  lazy val helloWorldBaseUrl = baseUrl("hello-world-upscan")
+  lazy val callbackEndpointTarget = loadConfig("upscan.callback-endpoint")
+
   lazy val assetsPrefix = loadConfig(s"assets.url") + loadConfig(s"assets.version")
   lazy val analyticsToken = loadConfig(s"google-analytics.token")
   lazy val analyticsHost = loadConfig(s"google-analytics.host")

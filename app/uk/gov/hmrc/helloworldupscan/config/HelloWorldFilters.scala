@@ -14,22 +14,17 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.helloworldupscan.services
+package uk.gov.hmrc.helloworldupscan.config
 
-import com.google.inject.ImplementedBy
-import uk.gov.hmrc.helloworldupscan.connectors.Reference
-import uk.gov.hmrc.helloworldupscan.model.{UploadId, UploadStatus}
+import javax.inject.Inject
+import play.api.http.HttpFilters
+import play.api.mvc.EssentialFilter
+import play.filters.csrf.CSRFFilter
+import uk.gov.hmrc.play.bootstrap.filters.FrontendFilters
 
-import scala.concurrent.Future
-
-
-@ImplementedBy(classOf[MongoBackedUploadProgressTracker])
-trait UploadProgressTracker {
-
-  def requestUpload(uploadId : UploadId, fileReference : Reference) : Future[Unit]
-
-  def registerUploadResult(reference : Reference, uploadStatus : UploadStatus): Future[Unit]
-
-  def getUploadResult(id : UploadId): Future[Option[UploadStatus]]
-
+class HelloWorldFilters @Inject() (frontendFilters: FrontendFilters) extends HttpFilters {
+  override def filters: Seq[EssentialFilter] = frontendFilters.filters.map {
+    case f: CSRFFilter => new FilteringCSRFFilter(f)
+    case other => other
+  }
 }

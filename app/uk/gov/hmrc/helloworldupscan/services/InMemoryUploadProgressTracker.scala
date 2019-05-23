@@ -16,33 +16,39 @@
 
 package uk.gov.hmrc.helloworldupscan.services
 
+import java.util.concurrent.atomic.AtomicReference
+import java.util.function.UnaryOperator
+
 import javax.inject.Singleton
+import uk.gov.hmrc.helloworldupscan.connectors.Reference
 import uk.gov.hmrc.helloworldupscan.model.{InProgress, UploadId, UploadStatus}
 
-import scala.collection.concurrent.TrieMap
 import scala.concurrent.Future
 
 
 @Singleton
 class InMemoryUploadProgressTracker extends UploadProgressTracker {
 
-  val uploadsInProgress: scala.collection.concurrent.Map[UploadId, UploadStatus] = TrieMap[UploadId, UploadStatus]()
+  case class Entry(uploadId: UploadId, reference: Reference, uploadStatus: UploadStatus)
 
-   def requestUpload: Future[UploadId] = {
-    val uploadId = UploadId.generate
-    uploadsInProgress.putIfAbsent(uploadId, InProgress)
-    Future.successful(uploadId)
-  }
+  var entries: AtomicReference[Set[Entry]] = new AtomicReference[Set[Entry]](Set.empty)
 
-  def registerUploadResult(uploadId : UploadId, uploadStatus : UploadStatus): Future[Unit] = {
-    uploadsInProgress.put(uploadId, uploadStatus)
+  def getUploadResult(id : UploadId): Future[Option[UploadStatus]] = Future.successful(entries.get.find(_.uploadId == id).map(_.uploadStatus))
+
+  override def requestUpload(uploadId: UploadId, fileReference: Reference): Future[Unit] = {
+    entries.updateAndGet(new UnaryOperator[Set[Entry]] {
+      override def apply(t: Set[Entry]): Set[Entry] = t.filterNot(in => in.uploadId == uploadId|| in.reference == fileReference) + Entry(uploadId, fileReference, InProgress)
+    })
     Future.successful(())
   }
 
-  def getUploadResult(id : UploadId): Future[Option[UploadStatus]] = Future.successful(uploadsInProgress.get(id))
-
-}
-
-object InMemoryUploadProgressTracker {
-  val METADATA_UPLOAD_ID = "upload-id"
+  override def registerUploadResult(reference: Reference, uploadStatus: UploadStatus): Future[Unit] = {
+    entries.updateAndGet(new UnaryOperator[Set[Entry]] {
+      override def apply(t: Set[Entry]): Set[Entry] = {
+        val existing = t.find(_.reference == reference).getOrElse(throw new RuntimeException("Doesn't exist"))
+        t - existing + existing.copy(uploadStatus = uploadStatus)
+      }
+    })
+    Future.successful(())
+  }
 }

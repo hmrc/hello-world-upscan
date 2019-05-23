@@ -53,6 +53,10 @@
         <appender-ref ref="STDOUT"/>
     </logger>
 
+    <logger name="uk.gov.hmrc.play.bootstrap.audit.DefaultAuditConnector" level="WARN">
+
+    </logger>
+
     <root level="INFO">
         <appender-ref ref="FILE"/>
         <appender-ref ref="STDOUT"/>

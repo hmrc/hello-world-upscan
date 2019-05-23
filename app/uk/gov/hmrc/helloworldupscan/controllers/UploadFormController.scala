@@ -24,28 +24,33 @@ import play.api.data.Forms.{mapping, text}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc._
 import uk.gov.hmrc.helloworldupscan.config.AppConfig
+import uk.gov.hmrc.helloworldupscan.connectors.{Reference, UpscanInitiateConnector}
 import uk.gov.hmrc.helloworldupscan.model.{UploadId, UploadedSuccessfully}
 import uk.gov.hmrc.helloworldupscan.services.{InMemoryUploadProgressTracker, UploadProgressTracker}
 import uk.gov.hmrc.helloworldupscan.views
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
-import uk.gov.hmrc.upscan.services.Upscan
 
 import scala.concurrent.Future
 
 @Singleton
-class UploadFormController @Inject()(val messagesApi: MessagesApi, val upscan : Upscan, val uploadProgressTracker : UploadProgressTracker, implicit val appConfig: AppConfig) extends FrontendController with I18nSupport {
+class UploadFormController @Inject()(
+                                      val messagesApi: MessagesApi,
+                                      val upscanInitiateConnector : UpscanInitiateConnector,
+                                      val uploadProgressTracker : UploadProgressTracker,
+                                      implicit val appConfig: AppConfig) extends FrontendController
+    with I18nSupport {
 
   val show = Action.async { implicit request =>
 
-    for (uploadId <- uploadProgressTracker.requestUpload) yield {
-      val upscanInitiateResponse = upscan.initiate(
-        redirectOnSuccess = Some(uk.gov.hmrc.helloworldupscan.controllers.routes.UploadFormController.showResult(uploadId).url),
-        metadataFields = Map(InMemoryUploadProgressTracker.METADATA_UPLOAD_ID -> uploadId.value)
-      )
+    val uploadId = UploadId.generate
 
-      Ok(views.html.upload_form(upscanInitiateResponse))
-    }
-
+    for {
+      upscanInitiateResponse <- upscanInitiateConnector.initiate(
+        redirectOnSuccess = Some(
+          appConfig.helloWorldBaseUrl +
+          uk.gov.hmrc.helloworldupscan.controllers.routes.UploadFormController.showResult(uploadId).url))
+      _ <- uploadProgressTracker.requestUpload(uploadId, Reference(upscanInitiateResponse.fileReference.reference))
+    } yield Ok(views.html.upload_form(upscanInitiateResponse))
   }
 
   def showResult(uploadId : UploadId) = Action.async {

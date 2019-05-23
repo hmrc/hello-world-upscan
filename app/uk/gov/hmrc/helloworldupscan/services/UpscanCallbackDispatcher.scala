@@ -17,15 +17,23 @@
 package uk.gov.hmrc.helloworldupscan.services
 
 import javax.inject.Inject
-import uk.gov.hmrc.helloworldupscan.model.{UploadId, UploadedSuccessfully}
-import uk.gov.hmrc.upscan.services.UploadCallback
+import uk.gov.hmrc.helloworldupscan.controllers.{CallbackBody, FailedCallbackBody, ReadyCallbackBody}
+import uk.gov.hmrc.helloworldupscan.model.{Failed, UploadedSuccessfully}
+
+import scala.concurrent.Future
 
 class UpscanCallbackDispatcher @Inject() (sessionStorage: UploadProgressTracker) {
 
-  def handleCallback(callback : UploadCallback): Unit = {
-    val uploadId = UploadId(callback.metadata.getOrElse(InMemoryUploadProgressTracker.METADATA_UPLOAD_ID, throw new RuntimeException("Missing upload_id field")))
-    val uploadStatus = UploadedSuccessfully(callback.name, callback.mimeType, callback.downloadUrl)
-    sessionStorage.registerUploadResult(uploadId, uploadStatus)
+  def handleCallback(callback : CallbackBody): Future[Unit] = {
+
+    val uploadStatus = callback match {
+      case s: ReadyCallbackBody =>
+        UploadedSuccessfully(s.uploadDetails.fileName, s.uploadDetails.fileMimeType, s.downloadUrl.getFile)
+      case s: FailedCallbackBody =>
+        Failed
+    }
+
+    sessionStorage.registerUploadResult(callback.reference, uploadStatus)
   }
 
 }

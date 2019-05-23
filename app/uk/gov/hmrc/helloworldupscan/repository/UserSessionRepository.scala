@@ -22,6 +22,7 @@ import play.modules.reactivemongo.ReactiveMongoComponent
 import reactivemongo.bson.BSONObjectID
 import reactivemongo.play.json.ImplicitBSONHandlers._
 import reactivemongo.play.json.commands.JSONFindAndModifyCommand
+import uk.gov.hmrc.helloworldupscan.connectors.Reference
 import uk.gov.hmrc.helloworldupscan.model._
 import uk.gov.hmrc.helloworldupscan.repository.UploadDetails._
 import uk.gov.hmrc.mongo.ReactiveRepository
@@ -29,7 +30,7 @@ import uk.gov.hmrc.mongo.json.ReactiveMongoFormats
 
 import scala.concurrent.{ExecutionContext, Future}
 
-case class UploadDetails(id : BSONObjectID, uploadId : UploadId, status : UploadStatus)
+case class UploadDetails(id : BSONObjectID, uploadId : UploadId, reference : Reference, status : UploadStatus)
 
 object UploadDetails {
   val status = "status"
@@ -65,6 +66,8 @@ object UploadDetails {
 
   implicit val idFormat: OFormat[UploadId] = Json.format[UploadId]
 
+  implicit val referenceFormat: OFormat[Reference] = Json.format[Reference]
+
   val format: Format[UploadDetails] = mongoEntity ( Json.format[UploadDetails] )
 }
 
@@ -80,9 +83,9 @@ class UserSessionRepository @Inject() (mongoComponent: ReactiveMongoComponent)(i
   def findByUploadId(uploadId: UploadId): Future[Option[UploadDetails]] =
     find("uploadId" -> Json.toJson(uploadId)).map(_.headOption)
 
-  def updateStatus(uploadId : UploadId, newStatus : UploadStatus): Future[UploadStatus] =
+  def updateStatus(reference : Reference, newStatus : UploadStatus): Future[UploadStatus] =
     for (result <- findAndUpdate(
-      query = JsObject(Seq("uploadId" -> Json.toJson(uploadId))),
+      query = JsObject(Seq("reference" -> Json.toJson(reference))),
       update = Json.obj(
         "$set" -> Json.obj(
           status -> Json.toJson(newStatus)

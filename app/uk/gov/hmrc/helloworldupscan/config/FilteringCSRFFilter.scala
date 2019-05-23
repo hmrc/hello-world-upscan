@@ -14,22 +14,24 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.helloworldupscan.services
+package uk.gov.hmrc.helloworldupscan.config
 
-import com.google.inject.ImplementedBy
-import uk.gov.hmrc.helloworldupscan.connectors.Reference
-import uk.gov.hmrc.helloworldupscan.model.{UploadId, UploadStatus}
+import play.api.mvc.{EssentialAction, EssentialFilter}
+import play.filters.csrf.CSRFFilter
 
-import scala.concurrent.Future
+class FilteringCSRFFilter(filter: CSRFFilter) extends EssentialFilter {
 
+  override def apply(nextFilter: EssentialAction) = new EssentialAction {
 
-@ImplementedBy(classOf[MongoBackedUploadProgressTracker])
-trait UploadProgressTracker {
+    import play.api.mvc._
 
-  def requestUpload(uploadId : UploadId, fileReference : Reference) : Future[Unit]
-
-  def registerUploadResult(reference : Reference, uploadStatus : UploadStatus): Future[Unit]
-
-  def getUploadResult(id : UploadId): Future[Option[UploadStatus]]
-
+    override def apply(rh: RequestHeader) = {
+      val chainedFilter = filter.apply(nextFilter)
+      if (rh.tags.getOrElse("ROUTE_COMMENTS", "").contains("NOCSRF")) {
+        nextFilter(rh)
+      } else {
+        chainedFilter(rh)
+      }
+    }
+  }
 }

@@ -1,6 +1,4 @@
 # microservice specific routes
-
-#Actual microservice
 GET        /hello-world                 uk.gov.hmrc.helloworldupscan.controllers.UploadFormController.show
 GET        /hello-world/result          uk.gov.hmrc.helloworldupscan.controllers.UploadFormController.showResult(uploadId : uk.gov.hmrc.helloworldupscan.model.UploadId)
 
@@ -8,5 +6,5 @@ GET        /hello-world/submission-form        uk.gov.hmrc.helloworldupscan.cont
 POST       /hello-world/submission-form        uk.gov.hmrc.helloworldupscan.controllers.UploadFormController.submitFormWithFile
 GET        /hello-world/submission-form/result uk.gov.hmrc.helloworldupscan.controllers.UploadFormController.showSubmissionResult
 
-#Mocked functionality of upscan
-POST       /upscan/upload               uk.gov.hmrc.upscan.controllers.UpscanController.upload
+#NOCSRF
+POST       /hello-world/upscan-callback uk.gov.hmrc.helloworldupscan.controllers.UploadCallbackController.callback
