@@ -18,6 +18,7 @@ package uk.gov.hmrc.helloworldupscan.repository
 
 import org.scalatest.{Matchers, WordSpec}
 import reactivemongo.bson.BSONObjectID
+import uk.gov.hmrc.helloworldupscan.connectors.Reference
 import uk.gov.hmrc.helloworldupscan.model.{Failed, InProgress, UploadId, UploadedSuccessfully}
 
 class UploadDetailsTest extends WordSpec with Matchers {
@@ -26,7 +27,7 @@ class UploadDetailsTest extends WordSpec with Matchers {
 
     "serialize and deserialize InProgress status" in {
 
-      val input = UploadDetails(BSONObjectID.generate(), UploadId.generate, InProgress)
+      val input = UploadDetails(BSONObjectID.generate(), UploadId.generate, Reference("ABC"), InProgress)
 
       val serialized = UploadDetails.format.writes(input)
 
@@ -38,7 +39,7 @@ class UploadDetailsTest extends WordSpec with Matchers {
 
     "serialize and deserialize Failed status" in {
 
-      val input = UploadDetails(BSONObjectID.generate(), UploadId.generate, Failed)
+      val input = UploadDetails(BSONObjectID.generate(), UploadId.generate, Reference("ABC"), Failed)
 
       val serialized = UploadDetails.format.writes(input)
 
@@ -50,7 +51,7 @@ class UploadDetailsTest extends WordSpec with Matchers {
 
     "serialize and deserialize UploadedSuccessfully status" in {
 
-      val input = UploadDetails(BSONObjectID.generate(), UploadId.generate, UploadedSuccessfully("foo.txt", "text/plain", "http:localhost:8080"))
+      val input = UploadDetails(BSONObjectID.generate(), UploadId.generate, Reference("ABC"), UploadedSuccessfully("foo.txt", "text/plain", "http:localhost:8080"))
 
       val serialized = UploadDetails.format.writes(input)
 
