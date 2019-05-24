@@ -24,7 +24,6 @@
     <h1>Please upload the file</h1>
 
     <form action="@upscanInitiateResponse.postTarget" method="post" enctype="multipart/form-data">
-        @CSRF.formField
 
         @for(field <- upscanInitiateResponse.formFields) {
             <input type="hidden" name="@field._1" value="@field._2"/>
