@@ -32,7 +32,7 @@ class AppConfig @Inject()(val runModeConfiguration: Configuration, environment: 
   private val contactFormServiceIdentifier = "MyService"
 
   lazy val initiateUrl = baseUrl("upscan-initiate") + "/upscan/initiate"
-  lazy val helloWorldBaseUrl = baseUrl("hello-world-upscan")
+  lazy val uploadRedirectTargetBase = loadConfig("upload-redirect-target-base")
   lazy val callbackEndpointTarget = loadConfig("upscan.callback-endpoint")
 
   lazy val assetsPrefix = loadConfig(s"assets.url") + loadConfig(s"assets.version")

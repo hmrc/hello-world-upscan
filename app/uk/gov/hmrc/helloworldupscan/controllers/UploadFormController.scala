@@ -47,7 +47,7 @@ class UploadFormController @Inject()(
     for {
       upscanInitiateResponse <- upscanInitiateConnector.initiate(
         redirectOnSuccess = Some(
-          appConfig.helloWorldBaseUrl +
+          appConfig.uploadRedirectTargetBase +
           uk.gov.hmrc.helloworldupscan.controllers.routes.UploadFormController.showResult(uploadId).url))
       _ <- uploadProgressTracker.requestUpload(uploadId, Reference(upscanInitiateResponse.fileReference.reference))
     } yield Ok(views.html.upload_form(upscanInitiateResponse))
