@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.helloworldupscan.controllers
 
-
 import javax.inject.{Inject, Singleton}
 import play.api.Logger
 import play.api.data.Form
@@ -25,8 +24,9 @@ import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc._
 import uk.gov.hmrc.helloworldupscan.config.AppConfig
 import uk.gov.hmrc.helloworldupscan.connectors.{Reference, UpscanInitiateConnector}
+import uk.gov.hmrc.helloworldupscan.controllers.routes.UploadFormController
 import uk.gov.hmrc.helloworldupscan.model.{UploadId, UploadedSuccessfully}
-import uk.gov.hmrc.helloworldupscan.services.{InMemoryUploadProgressTracker, UploadProgressTracker}
+import uk.gov.hmrc.helloworldupscan.services.UploadProgressTracker
 import uk.gov.hmrc.helloworldupscan.views
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
@@ -34,74 +34,88 @@ import scala.concurrent.Future
 
 @Singleton
 class UploadFormController @Inject()(
-                                      val messagesApi: MessagesApi,
-                                      val upscanInitiateConnector : UpscanInitiateConnector,
-                                      val uploadProgressTracker : UploadProgressTracker,
-                                      implicit val appConfig: AppConfig) extends FrontendController
+  val messagesApi: MessagesApi,
+  val upscanInitiateConnector: UpscanInitiateConnector,
+  val uploadProgressTracker: UploadProgressTracker,
+  implicit val appConfig: AppConfig)
+    extends FrontendController
     with I18nSupport {
 
-  val show = Action.async { implicit request =>
-
-    val uploadId = UploadId.generate
-
+  val show: Action[AnyContent] = Action.async { implicit request =>
+    val uploadId           = UploadId.generate
+    val successRedirectUrl = appConfig.uploadRedirectTargetBase + UploadFormController.showResult(uploadId).url
     for {
-      upscanInitiateResponse <- upscanInitiateConnector.initiate(
-        redirectOnSuccess = Some(
-          appConfig.uploadRedirectTargetBase +
-          uk.gov.hmrc.helloworldupscan.controllers.routes.UploadFormController.showResult(uploadId).url))
-      _ <- uploadProgressTracker.requestUpload(uploadId, Reference(upscanInitiateResponse.fileReference.reference))
+      upscanInitiateResponse <- upscanInitiateConnector.initiateV1(Some(successRedirectUrl))
+      _                      <- uploadProgressTracker.requestUpload(uploadId, Reference(upscanInitiateResponse.fileReference.reference))
     } yield Ok(views.html.upload_form(upscanInitiateResponse))
   }
 
-  def showResult(uploadId : UploadId) = Action.async {
-    implicit request =>
-      for (uploadResult <- uploadProgressTracker.getUploadResult(uploadId)) yield {
-        uploadResult match {
-          case Some(result) => Ok(views.html.upload_result(uploadId, result))
-          case None => BadRequest(s"Upload with id $uploadId not found")
-        }
-
-      }
+  val showV2: Action[AnyContent] = Action.async { implicit request =>
+    val uploadId           = UploadId.generate
+    val successRedirectUrl = appConfig.uploadRedirectTargetBase + UploadFormController.showResult(uploadId).url
+    val errorRedirectUrl   = appConfig.uploadRedirectTargetBase + "/hello-world-upscan/hello-world/error"
+    for {
+      upscanInitiateResponse <- upscanInitiateConnector.initiateV2(successRedirectUrl, errorRedirectUrl)
+      _                      <- uploadProgressTracker.requestUpload(uploadId, Reference(upscanInitiateResponse.fileReference.reference))
+    } yield Ok(views.html.upload_form(upscanInitiateResponse))
   }
 
-  case class SampleForm(
-                         field1 : String,
-                         field2 : String,
-                         uploadedFileId : UploadId)
-
-  val sampleForm = Form(
-    mapping(
-      "field1" -> text,
-          "field2" -> text,
-      "uploadedFileId" -> text.transform[UploadId](UploadId(_),_.value)
-    )(SampleForm.apply)(SampleForm.unapply)
-  )
-
-  def showSubmissionForm(uploadId: UploadId) = Action.async { implicit request =>
-    val emptyForm = sampleForm.fill(SampleForm("", "", uploadId))
+  def showResult(uploadId: UploadId): Action[AnyContent] = Action.async { implicit request =>
     for (uploadResult <- uploadProgressTracker.getUploadResult(uploadId)) yield {
       uploadResult match {
-        case Some(s: UploadedSuccessfully) => Ok(views.html.submission_form(emptyForm, s))
-        case _ => InternalServerError("Something gone wrong")
+        case Some(result) => Ok(views.html.upload_result(uploadId, result))
+        case None         => BadRequest(s"Upload with id $uploadId not found")
       }
     }
   }
 
-  def submitFormWithFile() = Action.async { implicit request =>
-    sampleForm.bindFromRequest().fold(
-      errors => {
-        Future.successful(BadRequest(s"Problem with a form $errors"))
-      },
-      form => {
-        Logger.info("Form successfully submitted")
-        Future.successful(Redirect(uk.gov.hmrc.helloworldupscan.controllers.routes.UploadFormController.showSubmissionResult()))
-      }
-    )
-
+  def showError(
+    errorCode: String,
+    errorMessage: String,
+    errorResource: String,
+    errorRequestId: String): Action[AnyContent] = Action { implicit request =>
+    Ok(
+      views.html.error_template(
+        "Upload Error",
+        errorMessage,
+        s"Code: $errorCode, Resource: $errorResource, RequestId: $errorRequestId"))
   }
 
-  def showSubmissionResult() = Action.async { implicit request =>
+  case class SampleForm(field1: String, field2: String, uploadedFileId: UploadId)
+
+  val sampleForm = Form(
+    mapping(
+      "field1"         -> text,
+      "field2"         -> text,
+      "uploadedFileId" -> text.transform[UploadId](UploadId(_), _.value)
+    )(SampleForm.apply)(SampleForm.unapply)
+  )
+
+  def showSubmissionForm(uploadId: UploadId): Action[AnyContent] = Action.async { implicit request =>
+    val emptyForm = sampleForm.fill(SampleForm("", "", uploadId))
+    for (uploadResult <- uploadProgressTracker.getUploadResult(uploadId)) yield {
+      uploadResult match {
+        case Some(s: UploadedSuccessfully) => Ok(views.html.submission_form(emptyForm, s))
+        case _                             => InternalServerError("Something gone wrong")
+      }
+    }
+  }
+
+  def submitFormWithFile(): Action[AnyContent] = Action.async { implicit request =>
+    sampleForm
+      .bindFromRequest()
+      .fold(
+        errors => {
+          Future.successful(BadRequest(s"Problem with a form $errors"))
+        },
+        _ => {
+          Logger.info("Form successfully submitted")
+          Future.successful(Redirect(UploadFormController.showSubmissionResult()))
+        }
+      )
+  }
+
+  def showSubmissionResult(): Action[AnyContent] = Action.async { implicit request =>
     Future.successful(Ok(views.html.submission_result()))
   }
-
 }

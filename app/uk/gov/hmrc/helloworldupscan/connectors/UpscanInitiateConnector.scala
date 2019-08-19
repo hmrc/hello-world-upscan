@@ -17,7 +17,7 @@
 package uk.gov.hmrc.helloworldupscan.connectors
 
 import javax.inject.Inject
-import play.api.libs.json.{Json, Reads}
+import play.api.libs.json.{Json, OFormat, Reads, Writes}
 import play.mvc.Http.HeaderNames
 import uk.gov.hmrc.helloworldupscan.config.AppConfig
 import uk.gov.hmrc.http.HeaderCarrier
@@ -27,48 +27,75 @@ import PreparedUpload._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-case class UpscanInitiateRequest(callbackUrl: String, successRedirect : Option[String] = None, minimumFileSize: Option[Int] = None, maximumFileSize: Option[Int] = None)
+sealed trait UpscanInitiateRequest
+
+case class UpscanInitiateRequestV1(
+  callbackUrl: String,
+  successRedirect: Option[String] = None,
+  minimumFileSize: Option[Int]    = None,
+  maximumFileSize: Option[Int]    = Some(512))
+    extends UpscanInitiateRequest
+
+case class UpscanInitiateRequestV2(
+  callbackUrl: String,
+  successRedirect: String,
+  errorRedirect: String,
+  minimumFileSize: Option[Int] = None,
+  maximumFileSize: Option[Int] = Some(512))
+    extends UpscanInitiateRequest
 
 case class UploadForm(href: String, fields: Map[String, String])
 
 case class Reference(value: String) extends AnyVal
 
 object Reference {
-  implicit val referenceReader = Reads.StringReads.map(Reference(_))
+  implicit val referenceReader: Reads[Reference] = Reads.StringReads.map(Reference(_))
 }
 
 case class PreparedUpload(reference: Reference, uploadRequest: UploadForm)
 
-object UpscanInitiateRequest {
-  implicit val format = Json.format[UpscanInitiateRequest]
+object UpscanInitiateRequestV1 {
+  implicit val format: OFormat[UpscanInitiateRequestV1] = Json.format[UpscanInitiateRequestV1]
+}
+
+object UpscanInitiateRequestV2 {
+  implicit val format: OFormat[UpscanInitiateRequestV2] = Json.format[UpscanInitiateRequestV2]
 }
 
 object PreparedUpload {
 
-  implicit val uploadFormFormat = Json.reads[UploadForm]
+  implicit val uploadFormFormat: Reads[UploadForm] = Json.reads[UploadForm]
 
-  implicit val format = Json.reads[PreparedUpload]
+  implicit val format: Reads[PreparedUpload] = Json.reads[PreparedUpload]
 }
 
-class UpscanInitiateConnector @Inject() (httpClient: HttpClient, appConfig: AppConfig)(implicit ec : ExecutionContext) {
+class UpscanInitiateConnector @Inject()(httpClient: HttpClient, appConfig: AppConfig)(implicit ec: ExecutionContext) {
 
   private val headers = Map(
-    HeaderNames.USER_AGENT -> "upscan-acceptance-tests",
+    HeaderNames.USER_AGENT   -> "upscan-acceptance-tests",
     HeaderNames.CONTENT_TYPE -> "application/json"
   )
 
-  def initiate(redirectOnSuccess : Option[String])(implicit hc : HeaderCarrier) : Future[UpscanInitiateResponse] = {
-
-    val request = UpscanInitiateRequest(appConfig.callbackEndpointTarget, redirectOnSuccess)
-
-    for {
-      response <- httpClient.POST[UpscanInitiateRequest, PreparedUpload](appConfig.initiateUrl, request, headers.toSeq)
-      } yield UpscanInitiateResponse(
-        UpscanFileReference(response.reference.value),
-        response.uploadRequest.href,
-        response.uploadRequest.fields
-      )
-
+  def initiateV1(redirectOnSuccess: Option[String])(implicit hc: HeaderCarrier): Future[UpscanInitiateResponse] = {
+    val request =
+      UpscanInitiateRequestV1(callbackUrl = appConfig.callbackEndpointTarget, successRedirect = redirectOnSuccess)
+    initiate(appConfig.initiateUrl, request)
   }
+
+  def initiateV2(redirectOnSuccess: String, redirectOnError: String)(
+    implicit hc: HeaderCarrier): Future[UpscanInitiateResponse] = {
+    val request = UpscanInitiateRequestV2(appConfig.callbackEndpointTarget, redirectOnSuccess, redirectOnError)
+    initiate(appConfig.initiateV2Url, request)
+  }
+
+  private def initiate[T](url: String, request: T)(
+    implicit hc: HeaderCarrier,
+    wts: Writes[T]): Future[UpscanInitiateResponse] =
+    for {
+      response <- httpClient.POST[T, PreparedUpload](url, request, headers.toSeq)
+      fileReference = UpscanFileReference(response.reference.value)
+      postTarget    = response.uploadRequest.href
+      formFields    = response.uploadRequest.fields
+    } yield UpscanInitiateResponse(fileReference, postTarget, formFields)
 
 }
