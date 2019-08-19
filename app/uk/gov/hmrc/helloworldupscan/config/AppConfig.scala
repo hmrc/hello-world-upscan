@@ -26,18 +26,21 @@ import uk.gov.hmrc.play.config.ServicesConfig
 class AppConfig @Inject()(val runModeConfiguration: Configuration, environment: Environment) extends ServicesConfig {
   override protected def mode: Mode = environment.mode
 
-  private def loadConfig(key: String) = runModeConfiguration.getString(key).getOrElse(throw new Exception(s"Missing configuration key: $key"))
+  private def loadConfig(key: String) =
+    runModeConfiguration.getString(key).getOrElse(throw new Exception(s"Missing configuration key: $key"))
 
-  private val contactHost = runModeConfiguration.getString(s"contact-frontend.host").getOrElse("")
+  private val contactHost                  = runModeConfiguration.getString(s"contact-frontend.host").getOrElse("")
   private val contactFormServiceIdentifier = "MyService"
 
-  lazy val initiateUrl = baseUrl("upscan-initiate") + "/upscan/initiate"
+  lazy val initiateUrl              = baseUrl("upscan-initiate") + "/upscan/initiate"
+  lazy val initiateV2Url            = baseUrl("upscan-initiate") + "/upscan/v2/initiate"
   lazy val uploadRedirectTargetBase = loadConfig("upload-redirect-target-base")
-  lazy val callbackEndpointTarget = loadConfig("upscan.callback-endpoint")
+  lazy val callbackEndpointTarget   = loadConfig("upscan.callback-endpoint")
 
-  lazy val assetsPrefix = loadConfig(s"assets.url") + loadConfig(s"assets.version")
+  lazy val assetsPrefix   = loadConfig(s"assets.url") + loadConfig(s"assets.version")
   lazy val analyticsToken = loadConfig(s"google-analytics.token")
-  lazy val analyticsHost = loadConfig(s"google-analytics.host")
+  lazy val analyticsHost  = loadConfig(s"google-analytics.host")
+
   lazy val reportAProblemPartialUrl = s"$contactHost/contact/problem_reports_ajax?service=$contactFormServiceIdentifier"
-  lazy val reportAProblemNonJSUrl = s"$contactHost/contact/problem_reports_nonjs?service=$contactFormServiceIdentifier"
+  lazy val reportAProblemNonJSUrl   = s"$contactHost/contact/problem_reports_nonjs?service=$contactFormServiceIdentifier"
 }

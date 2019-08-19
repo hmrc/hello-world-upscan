@@ -1,10 +1,15 @@
 # microservice specific routes
-GET        /hello-world                 uk.gov.hmrc.helloworldupscan.controllers.UploadFormController.show
-GET        /hello-world/result          uk.gov.hmrc.helloworldupscan.controllers.UploadFormController.showResult(uploadId : uk.gov.hmrc.helloworldupscan.model.UploadId)
+GET        /hello-world                        uk.gov.hmrc.helloworldupscan.controllers.UploadFormController.show
+GET        /v2/hello-world                     uk.gov.hmrc.helloworldupscan.controllers.UploadFormController.showV2
 
-GET        /hello-world/submission-form        uk.gov.hmrc.helloworldupscan.controllers.UploadFormController.showSubmissionForm(uploadId : uk.gov.hmrc.helloworldupscan.model.UploadId)
+GET        /hello-world/submission-form        uk.gov.hmrc.helloworldupscan.controllers.UploadFormController.showSubmissionForm(uploadId: uk.gov.hmrc.helloworldupscan.model.UploadId)
 POST       /hello-world/submission-form        uk.gov.hmrc.helloworldupscan.controllers.UploadFormController.submitFormWithFile
 GET        /hello-world/submission-form/result uk.gov.hmrc.helloworldupscan.controllers.UploadFormController.showSubmissionResult
 
+# upload file redirects
+GET        /hello-world/success                uk.gov.hmrc.helloworldupscan.controllers.UploadFormController.showResult(uploadId : uk.gov.hmrc.helloworldupscan.model.UploadId)
+GET        /hello-world/error                  uk.gov.hmrc.helloworldupscan.controllers.UploadFormController.showError(errorCode: String, errorMessage: String, errorResource: String, errorRequestId: String)
+
+# upload file notification callback
 #NOCSRF
-POST       /hello-world/upscan-callback uk.gov.hmrc.helloworldupscan.controllers.UploadCallbackController.callback
+POST       /hello-world/upscan-callback        uk.gov.hmrc.helloworldupscan.controllers.UploadCallbackController.callback
