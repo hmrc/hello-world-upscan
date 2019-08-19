@@ -8,7 +8,7 @@ GET        /hello-world/submission-form/result uk.gov.hmrc.helloworldupscan.cont
 
 # upload file redirects
 GET        /hello-world/success                uk.gov.hmrc.helloworldupscan.controllers.UploadFormController.showResult(uploadId : uk.gov.hmrc.helloworldupscan.model.UploadId)
-GET        /hello-world/error                  uk.gov.hmrc.helloworldupscan.controllers.UploadFormController.showError(errorCode: String, errorMessage: String, errorResource: String, errorRequestId: String)
+GET        /hello-world/error                  uk.gov.hmrc.helloworldupscan.controllers.UploadFormController.showError(errorCode: String, errorMessage: String, errorRequestId: String)
 
 # upload file notification callback
 #NOCSRF
