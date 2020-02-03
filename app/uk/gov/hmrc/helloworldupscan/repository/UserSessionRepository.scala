@@ -21,7 +21,6 @@ import play.api.libs.json._
 import play.modules.reactivemongo.ReactiveMongoComponent
 import reactivemongo.bson.BSONObjectID
 import reactivemongo.play.json.ImplicitBSONHandlers._
-import reactivemongo.play.json.commands.JSONFindAndModifyCommand
 import uk.gov.hmrc.helloworldupscan.connectors.Reference
 import uk.gov.hmrc.helloworldupscan.model._
 import uk.gov.hmrc.helloworldupscan.repository.UploadDetails._
@@ -91,7 +90,7 @@ class UserSessionRepository @Inject() (mongoComponent: ReactiveMongoComponent)(i
           status -> Json.toJson(newStatus)
         )
       ), upsert = true)) yield {
-      result.result[UploadStatus].getOrElse(throw new Exception("Update failed, no document modified"))
+      result.result[UploadDetails].map(_.status).getOrElse(throw new Exception("Update failed, no document modified"))
     }
 
 
