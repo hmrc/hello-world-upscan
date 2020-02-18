@@ -69,9 +69,9 @@ class UploadFormController @Inject()(
     }
   }
 
-  def showError(errorCode: String, errorMessage: String, errorRequestId: String): Action[AnyContent] = Action {
+  def showError(errorCode: String, errorMessage: String, errorRequestId: String, key: String): Action[AnyContent] = Action {
     implicit request =>
-      Ok(views.html.error_template("Upload Error", errorMessage, s"Code: $errorCode, RequestId: $errorRequestId"))
+      Ok(views.html.error_template("Upload Error", errorMessage, s"Code: $errorCode, RequestId: $errorRequestId, FileReference: $key"))
   }
 
   case class SampleForm(field1: String, field2: String, uploadedFileId: UploadId)
