@@ -20,7 +20,6 @@ import javax.inject.{Inject, Singleton}
 import play.api.Logger
 import play.api.data.Form
 import play.api.data.Forms.{mapping, text}
-import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc._
 import uk.gov.hmrc.helloworldupscan.config.AppConfig
 import uk.gov.hmrc.helloworldupscan.connectors.{Reference, UpscanInitiateConnector}
@@ -30,16 +29,18 @@ import uk.gov.hmrc.helloworldupscan.services.UploadProgressTracker
 import uk.gov.hmrc.helloworldupscan.views
 import uk.gov.hmrc.play.bootstrap.controller.FrontendController
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class UploadFormController @Inject()(
-  val messagesApi: MessagesApi,
-  val upscanInitiateConnector: UpscanInitiateConnector,
-  val uploadProgressTracker: UploadProgressTracker,
-  implicit val appConfig: AppConfig)
-    extends FrontendController
-    with I18nSupport {
+class UploadFormController @Inject()(upscanInitiateConnector: UpscanInitiateConnector,
+                                     uploadProgressTracker: UploadProgressTracker,
+                                     mcc: MessagesControllerComponents,
+                                     uploadFormView: views.html.upload_form,
+                                     uploadResultView: views.html.upload_result,
+                                     submissionFormView: views.html.submission_form,
+                                     submissionResultView: views.html.submission_result)
+                                    (implicit appConfig: AppConfig,
+                                     ec: ExecutionContext) extends FrontendController(mcc) {
 
   val show: Action[AnyContent] = Action.async { implicit request =>
     val uploadId           = UploadId.generate
@@ -47,7 +48,7 @@ class UploadFormController @Inject()(
     for {
       upscanInitiateResponse <- upscanInitiateConnector.initiateV1(Some(successRedirectUrl))
       _                      <- uploadProgressTracker.requestUpload(uploadId, Reference(upscanInitiateResponse.fileReference.reference))
-    } yield Ok(views.html.upload_form(upscanInitiateResponse))
+    } yield Ok(uploadFormView(upscanInitiateResponse))
   }
 
   val showV2: Action[AnyContent] = Action.async { implicit request =>
@@ -57,13 +58,13 @@ class UploadFormController @Inject()(
     for {
       upscanInitiateResponse <- upscanInitiateConnector.initiateV2(successRedirectUrl, errorRedirectUrl)
       _                      <- uploadProgressTracker.requestUpload(uploadId, Reference(upscanInitiateResponse.fileReference.reference))
-    } yield Ok(views.html.upload_form(upscanInitiateResponse))
+    } yield Ok(uploadFormView(upscanInitiateResponse))
   }
 
   def showResult(uploadId: UploadId): Action[AnyContent] = Action.async { implicit request =>
     for (uploadResult <- uploadProgressTracker.getUploadResult(uploadId)) yield {
       uploadResult match {
-        case Some(result) => Ok(views.html.upload_result(uploadId, result))
+        case Some(result) => Ok(uploadResultView(uploadId, result))
         case None         => BadRequest(s"Upload with id $uploadId not found")
       }
     }
@@ -74,9 +75,9 @@ class UploadFormController @Inject()(
       Ok(views.html.error_template("Upload Error", errorMessage, s"Code: $errorCode, RequestId: $errorRequestId, FileReference: $key"))
   }
 
-  case class SampleForm(field1: String, field2: String, uploadedFileId: UploadId)
+  private case class SampleForm(field1: String, field2: String, uploadedFileId: UploadId)
 
-  val sampleForm = Form(
+  private val sampleForm = Form(
     mapping(
       "field1"         -> text,
       "field2"         -> text,
@@ -88,7 +89,7 @@ class UploadFormController @Inject()(
     val emptyForm = sampleForm.fill(SampleForm("", "", uploadId))
     for (uploadResult <- uploadProgressTracker.getUploadResult(uploadId)) yield {
       uploadResult match {
-        case Some(s: UploadedSuccessfully) => Ok(views.html.submission_form(emptyForm, s))
+        case Some(s: UploadedSuccessfully) => Ok(submissionFormView(emptyForm, s))
         case _                             => InternalServerError("Something gone wrong")
       }
     }
@@ -109,6 +110,6 @@ class UploadFormController @Inject()(
   }
 
   def showSubmissionResult(): Action[AnyContent] = Action.async { implicit request =>
-    Future.successful(Ok(views.html.submission_result()))
+    Future.successful(Ok(submissionResultView()))
   }
 }

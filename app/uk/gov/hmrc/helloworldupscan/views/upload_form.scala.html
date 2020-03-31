@@ -14,13 +14,14 @@
  * limitations under the License.
  *@
 
-@import helper._
 @import uk.gov.hmrc.helloworldupscan.config.AppConfig
-@import uk.gov.hmrc.play.views.html._
 @import uk.gov.hmrc.upscan.services._
-@(upscanInitiateResponse : UpscanInitiateResponse)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
 
-@main_template(title = "Please upload a file", bodyClasses = None) {
+@this(mainLayout: main_template)
+
+@(upscanInitiateResponse : UpscanInitiateResponse)(implicit messages: Messages, appConfig: AppConfig)
+
+@mainLayout(title = "Please upload a file", bodyClasses = None) {
     <h1>Please upload the file</h1>
 
     <form action="@upscanInitiateResponse.postTarget" method="post" enctype="multipart/form-data">

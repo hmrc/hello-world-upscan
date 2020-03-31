@@ -14,13 +14,12 @@
  * limitations under the License.
  *@
 
-@import helper._
 @import uk.gov.hmrc.helloworldupscan.config.AppConfig
-@import uk.gov.hmrc.play.views.html._
-@import uk.gov.hmrc.upscan.services._
-@()(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
-@main_template(title = "Your form has been submitted successfully", bodyClasses = None) {
+
+@this(mainLayout: main_template)
+
+@()(implicit messages: Messages, appConfig: AppConfig)
+
+@mainLayout(title = "Your form has been submitted successfully", bodyClasses = None) {
     <h1>Your form has been submitted successfully</h1>
-
-
 }

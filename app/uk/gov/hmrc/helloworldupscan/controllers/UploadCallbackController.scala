@@ -25,10 +25,10 @@ import play.api.mvc._
 import uk.gov.hmrc.helloworldupscan.connectors.Reference
 import uk.gov.hmrc.helloworldupscan.controllers.CallbackBody._
 import uk.gov.hmrc.helloworldupscan.services.UpscanCallbackDispatcher
-import uk.gov.hmrc.play.bootstrap.controller.BaseController
+import uk.gov.hmrc.helloworldupscan.utils.HttpUrlFormat
+import uk.gov.hmrc.play.bootstrap.controller.BackendController
 
-import scala.concurrent.{ExecutionContext}
-import uk.gov.hmrc.helloworldupscan.utils.HttpUrlFormat._
+import scala.concurrent.ExecutionContext
 
 sealed trait CallbackBody {
   def reference : Reference
@@ -45,9 +45,9 @@ case class FailedCallbackBody(
                                failureDetails: ErrorDetails
                              ) extends CallbackBody
 
-
-
 object CallbackBody {
+  // must be in scope to create Reads for ReadyCallbackBody
+  private implicit val urlFormat: Format[URL] = HttpUrlFormat.format
 
   implicit val uploadDetailsReads = Json.reads[UploadDetails]
 
@@ -66,23 +66,20 @@ object CallbackBody {
     }
   }
 }
+
 case class UploadDetails(uploadTimestamp: Instant, checksum: String, fileMimeType: String, fileName: String)
 
 case class ErrorDetails(failureReason: String, message: String)
 
 
 @Singleton
-class UploadCallbackController @Inject()(val upscanCallbackDispatcher : UpscanCallbackDispatcher)(
-                                      implicit val ec : ExecutionContext) extends BaseController {
+class UploadCallbackController @Inject()(upscanCallbackDispatcher : UpscanCallbackDispatcher,
+                                         cc: ControllerComponents)
+                                        (implicit ec : ExecutionContext) extends BackendController(cc) {
 
   val callback = Action.async(parse.json) { implicit request =>
-
       withJsonBody[CallbackBody] { feedback: CallbackBody =>
-
         upscanCallbackDispatcher.handleCallback(feedback).map(_ => Ok)
-
-
     }
   }
-
 }

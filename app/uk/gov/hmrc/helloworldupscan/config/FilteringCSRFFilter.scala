@@ -17,6 +17,7 @@
 package uk.gov.hmrc.helloworldupscan.config
 
 import play.api.mvc.{EssentialAction, EssentialFilter}
+import play.api.routing.Router.Attrs
 import play.filters.csrf.CSRFFilter
 
 class FilteringCSRFFilter(filter: CSRFFilter) extends EssentialFilter {
@@ -27,7 +28,8 @@ class FilteringCSRFFilter(filter: CSRFFilter) extends EssentialFilter {
 
     override def apply(rh: RequestHeader) = {
       val chainedFilter = filter.apply(nextFilter)
-      if (rh.tags.getOrElse("ROUTE_COMMENTS", "").contains("NOCSRF")) {
+
+      if (rh.attrs.get(Attrs.HandlerDef).exists(_.comments.contains("NOCSRF"))) {
         nextFilter(rh)
       } else {
         chainedFilter(rh)

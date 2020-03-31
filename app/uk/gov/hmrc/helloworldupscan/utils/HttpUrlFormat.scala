@@ -18,7 +18,6 @@ package uk.gov.hmrc.helloworldupscan.utils
 
 import java.net.URL
 
-import play.api.data.validation.ValidationError
 import play.api.libs.json._
 
 import scala.util.Try
@@ -27,14 +26,16 @@ object HttpUrlFormat {
 
   implicit val format = new Format[URL] {
 
-    override def reads(json: JsValue): JsResult[URL] = json match {
-      case JsString(s) => {
-        parseUrl(s).map(JsSuccess(_)).getOrElse(JsError(Seq(JsPath() -> Seq(ValidationError("error.expected.url")))))
+    override def reads(json: JsValue): JsResult[URL] =
+      json match {
+        case JsString(s) => parseUrl(s).map(JsSuccess(_)).getOrElse(invalidUrlError)
+        case _           => invalidUrlError
       }
-      case _ => JsError(Seq(JsPath() -> Seq(ValidationError("error.expected.url"))))
-    }
 
     private def parseUrl(s: String): Option[URL] = Try(new URL(s)).toOption
+
+    private def invalidUrlError: JsError =
+      JsError(Seq(JsPath() -> Seq(JsonValidationError("error.expected.url"))))
 
     override def writes(o: URL): JsValue = JsString(o.toString)
   }
