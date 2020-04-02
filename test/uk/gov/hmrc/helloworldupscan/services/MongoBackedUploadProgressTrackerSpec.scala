@@ -25,8 +25,6 @@ import uk.gov.hmrc.mongo.{Awaiting, MongoConnector, MongoSpecSupport}
 
 class MongoBackedUploadProgressTrackerSpec extends WordSpec with MongoSpecSupport with Awaiting with Matchers with BeforeAndAfterEach {
 
-  import scala.concurrent.ExecutionContext.Implicits._
-
   val mongoComponent = new MongoComponent(mongoUri)
   val repo = new UserSessionRepository(mongoComponent)
   val t = new MongoBackedUploadProgressTracker(repo)

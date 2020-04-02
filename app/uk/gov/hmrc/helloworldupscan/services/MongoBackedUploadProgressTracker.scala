@@ -15,6 +15,7 @@
  */
 
 package uk.gov.hmrc.helloworldupscan.services
+
 import javax.inject.Inject
 import reactivemongo.bson.BSONObjectID
 import uk.gov.hmrc.helloworldupscan.connectors.Reference
@@ -25,13 +26,11 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class MongoBackedUploadProgressTracker @Inject()(repository : UserSessionRepository)(implicit ec : ExecutionContext) extends UploadProgressTracker {
 
-  override def requestUpload(uploadId : UploadId, fileReference : Reference) : Future[Unit] = {
-    repository.insert(UploadDetails(BSONObjectID.generate(), uploadId, fileReference, InProgress)).map(_ => uploadId)
-  }
+  override def requestUpload(uploadId : UploadId, fileReference : Reference): Future[Unit] =
+    repository.insert(UploadDetails(BSONObjectID.generate(), uploadId, fileReference, InProgress)).map(_ => ())
 
   override def registerUploadResult(fileReference: Reference, uploadStatus: UploadStatus): Future[Unit] =
     repository.updateStatus(fileReference, uploadStatus).map(_ => ())
-
 
   override def getUploadResult(id: UploadId): Future[Option[UploadStatus]] =
     for (result <- repository.findByUploadId(id)) yield {

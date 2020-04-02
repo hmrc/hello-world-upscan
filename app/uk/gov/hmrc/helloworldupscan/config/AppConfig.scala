@@ -17,23 +17,15 @@
 package uk.gov.hmrc.helloworldupscan.config
 
 import javax.inject.{Inject, Singleton}
-
-import play.api.{Configuration, Environment}
-import play.api.Mode.Mode
-import uk.gov.hmrc.play.config.ServicesConfig
+import play.api.Configuration
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 @Singleton
-class AppConfig @Inject()(val runModeConfiguration: Configuration, environment: Environment) extends ServicesConfig {
-  override protected def mode: Mode = environment.mode
+class AppConfig @Inject()(configuration: Configuration,
+                          servicesConfig: ServicesConfig) {
 
-  private def loadConfig(key: String) =
-    runModeConfiguration.getString(key).getOrElse(throw new Exception(s"Missing configuration key: $key"))
-
-  private val contactHost                  = runModeConfiguration.getString(s"contact-frontend.host").getOrElse("")
-  private val contactFormServiceIdentifier = "MyService"
-
-  lazy val initiateUrl              = baseUrl("upscan-initiate") + "/upscan/initiate"
-  lazy val initiateV2Url            = baseUrl("upscan-initiate") + "/upscan/v2/initiate"
+  lazy val initiateUrl              = servicesConfig.baseUrl("upscan-initiate") + "/upscan/initiate"
+  lazy val initiateV2Url            = servicesConfig.baseUrl("upscan-initiate") + "/upscan/v2/initiate"
   lazy val uploadRedirectTargetBase = loadConfig("upload-redirect-target-base")
   lazy val callbackEndpointTarget   = loadConfig("upscan.callback-endpoint")
 
@@ -43,4 +35,9 @@ class AppConfig @Inject()(val runModeConfiguration: Configuration, environment: 
 
   lazy val reportAProblemPartialUrl = s"$contactHost/contact/problem_reports_ajax?service=$contactFormServiceIdentifier"
   lazy val reportAProblemNonJSUrl   = s"$contactHost/contact/problem_reports_nonjs?service=$contactFormServiceIdentifier"
+  private val contactHost                  = configuration.getOptional[String](s"contact-frontend.host").getOrElse("")
+  private val contactFormServiceIdentifier = "MyService"
+
+  private def loadConfig(key: String) =
+    configuration.getOptional[String](key).getOrElse(throw new Exception(s"Missing configuration key: $key"))
 }
