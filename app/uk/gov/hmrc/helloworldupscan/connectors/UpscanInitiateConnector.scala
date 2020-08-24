@@ -29,6 +29,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 sealed trait UpscanInitiateRequest
 
+// TODO expectedContentType is also an optional value
 case class UpscanInitiateRequestV1(
   callbackUrl: String,
   successRedirect: Option[String] = None,
@@ -36,12 +37,13 @@ case class UpscanInitiateRequestV1(
   maximumFileSize: Option[Int]    = Some(512))
     extends UpscanInitiateRequest
 
+// TODO expectedContentType is also an optional value
 case class UpscanInitiateRequestV2(
   callbackUrl: String,
-  successRedirect: String,
+  successRedirect: Option[String] = None,
   errorRedirect: String,
-  minimumFileSize: Option[Int] = None,
-  maximumFileSize: Option[Int] = Some(512))
+  minimumFileSize: Option[Int]    = None,
+  maximumFileSize: Option[Int]    = Some(512))
     extends UpscanInitiateRequest
 
 case class UploadForm(href: String, fields: Map[String, String])
@@ -77,14 +79,20 @@ class UpscanInitiateConnector @Inject()(httpClient: HttpClient, appConfig: AppCo
   )
 
   def initiateV1(redirectOnSuccess: Option[String])(implicit hc: HeaderCarrier): Future[UpscanInitiateResponse] = {
-    val request =
-      UpscanInitiateRequestV1(callbackUrl = appConfig.callbackEndpointTarget, successRedirect = redirectOnSuccess)
+    val request = UpscanInitiateRequestV1(
+      callbackUrl = appConfig.callbackEndpointTarget,
+      successRedirect = redirectOnSuccess
+    )
     initiate(appConfig.initiateUrl, request)
   }
 
-  def initiateV2(redirectOnSuccess: String, redirectOnError: String)(
-    implicit hc: HeaderCarrier): Future[UpscanInitiateResponse] = {
-    val request = UpscanInitiateRequestV2(appConfig.callbackEndpointTarget, redirectOnSuccess, redirectOnError)
+  def initiateV2(redirectOnSuccess: Option[String], redirectOnError: String)
+                (implicit hc: HeaderCarrier): Future[UpscanInitiateResponse] = {
+    val request = UpscanInitiateRequestV2(
+      callbackUrl = appConfig.callbackEndpointTarget,
+      successRedirect = redirectOnSuccess,
+      errorRedirect = redirectOnError
+    )
     initiate(appConfig.initiateV2Url, request)
   }
 
