@@ -41,7 +41,7 @@ case class UpscanInitiateRequestV1(
 case class UpscanInitiateRequestV2(
   callbackUrl: String,
   successRedirect: Option[String] = None,
-  errorRedirect: String,
+  errorRedirect: Option[String]   = None,
   minimumFileSize: Option[Int]    = None,
   maximumFileSize: Option[Int]    = Some(512))
     extends UpscanInitiateRequest
@@ -86,7 +86,7 @@ class UpscanInitiateConnector @Inject()(httpClient: HttpClient, appConfig: AppCo
     initiate(appConfig.initiateUrl, request)
   }
 
-  def initiateV2(redirectOnSuccess: Option[String], redirectOnError: String)
+  def initiateV2(redirectOnSuccess: Option[String], redirectOnError: Option[String])
                 (implicit hc: HeaderCarrier): Future[UpscanInitiateResponse] = {
     val request = UpscanInitiateRequestV2(
       callbackUrl = appConfig.callbackEndpointTarget,

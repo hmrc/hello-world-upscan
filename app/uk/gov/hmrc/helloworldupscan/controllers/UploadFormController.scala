@@ -56,7 +56,7 @@ class UploadFormController @Inject()(upscanInitiateConnector: UpscanInitiateConn
     val successRedirectUrl = appConfig.uploadRedirectTargetBase + UploadFormController.showResult(uploadId).url
     val errorRedirectUrl   = appConfig.uploadRedirectTargetBase + "/hello-world-upscan/hello-world/error"
     for {
-      upscanInitiateResponse <- upscanInitiateConnector.initiateV2(Some(successRedirectUrl), errorRedirectUrl)
+      upscanInitiateResponse <- upscanInitiateConnector.initiateV2(Some(successRedirectUrl), Some(errorRedirectUrl))
       _                      <- uploadProgressTracker.requestUpload(uploadId, Reference(upscanInitiateResponse.fileReference.reference))
     } yield Ok(uploadFormView(upscanInitiateResponse))
   }
