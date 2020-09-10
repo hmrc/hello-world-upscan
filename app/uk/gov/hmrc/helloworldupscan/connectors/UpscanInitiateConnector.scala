@@ -74,7 +74,6 @@ object PreparedUpload {
 class UpscanInitiateConnector @Inject()(httpClient: HttpClient, appConfig: AppConfig)(implicit ec: ExecutionContext) {
 
   private val headers = Map(
-    HeaderNames.USER_AGENT   -> "upscan-acceptance-tests",
     HeaderNames.CONTENT_TYPE -> "application/json"
   )
 
