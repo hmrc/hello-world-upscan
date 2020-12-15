@@ -20,7 +20,7 @@
 
 @this(mainLayout: main_template)
 
-@(form: Form[_], uploadedFile: UploadedSuccessfully)(implicit request: Request[_], messages: Messages, appConfig: AppConfig)
+@(form: Form[_], uploadedFile: UploadedSuccessfully)(implicit request: Request[_], messages: Messages, appConfig: AppConfig, requestHeader: RequestHeader)
 
 @mainLayout(title = "Hello from hello-world-upscan", bodyClasses = None) {
     <h1>Please fill in additional information</h1>

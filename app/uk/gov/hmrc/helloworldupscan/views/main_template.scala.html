@@ -25,7 +25,7 @@
   bodyClasses: Option[String] = None,
   mainClass: Option[String] = None,
   scriptElem: Option[Html] = None,
-  customHead: Option[Html] = None)(mainContent: Html)(implicit messages: Messages, appConfig: AppConfig)
+  customHead: Option[Html] = None)(mainContent: Html)(implicit messages: Messages, appConfig: AppConfig, requestHeader: RequestHeader)
 
 @serviceInfoContent = {}
 

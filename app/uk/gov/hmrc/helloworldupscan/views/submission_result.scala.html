@@ -18,7 +18,7 @@
 
 @this(mainLayout: main_template)
 
-@()(implicit messages: Messages, appConfig: AppConfig)
+@()(implicit messages: Messages, appConfig: AppConfig, requestHeader: RequestHeader)
 
 @mainLayout(title = "Your form has been submitted successfully", bodyClasses = None) {
     <h1>Your form has been submitted successfully</h1>

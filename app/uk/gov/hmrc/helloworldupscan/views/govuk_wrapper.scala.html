@@ -27,7 +27,7 @@
   customHead: Option[Html] = None,
   mainContent: Html = HtmlFormat.empty,
   serviceInfoContent: Html = HtmlFormat.empty,
-  scriptElem: Option[Html] = None)(implicit messages: Messages)
+  scriptElem: Option[Html] = None)(implicit messages: Messages, requestHeader: RequestHeader)
 
 @import layouts.{govuk_template => hmrcGovUkTemplate}
 @import uk.gov.hmrc.play.views.html.{layouts => uiLayouts}
