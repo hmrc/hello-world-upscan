@@ -19,7 +19,7 @@
 
 @this(mainLayout: main_template)
 
-@(upscanInitiateResponse : UpscanInitiateResponse)(implicit messages: Messages, appConfig: AppConfig)
+@(upscanInitiateResponse : UpscanInitiateResponse)(implicit messages: Messages, appConfig: AppConfig, requestHeader: RequestHeader)
 
 @mainLayout(title = "Please upload a file", bodyClasses = None) {
     <h1>Please upload the file</h1>

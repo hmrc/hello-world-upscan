@@ -19,7 +19,7 @@
 
 @this(mainLayout: main_template)
 
-@(uploadId: UploadId, status : UploadStatus)(implicit messages: Messages, appConfig: AppConfig)
+@(uploadId: UploadId, status : UploadStatus)(implicit messages: Messages, appConfig: AppConfig, requestHeader: RequestHeader)
 
 @refreshHeader = {
  <meta http-equiv="refresh" content="1"/>
