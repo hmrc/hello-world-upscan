@@ -23,7 +23,7 @@ import play.api.mvc.QueryStringBindable
 sealed trait UploadStatus
 case object InProgress extends UploadStatus
 case object Failed extends UploadStatus
-case class UploadedSuccessfully(name : String, mimeType : String, downloadUrl : String) extends UploadStatus
+case class UploadedSuccessfully(name: String, mimeType: String, downloadUrl: String, size: Option[Long]) extends UploadStatus
 
 case class UploadId(value : String) extends AnyVal
 

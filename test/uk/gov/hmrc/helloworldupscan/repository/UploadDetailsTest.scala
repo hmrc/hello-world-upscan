@@ -43,8 +43,27 @@ class UploadDetailsTest extends WordSpec with Matchers {
       output.get shouldBe input
     }
 
-    "serialize and deserialize UploadedSuccessfully status" in {
-      val input = UploadDetails(BSONObjectID.generate(), UploadId.generate, Reference("ABC"), UploadedSuccessfully("foo.txt", "text/plain", "http:localhost:8080"))
+    "serialize and deserialize UploadedSuccessfully status when size is unknown" in {
+      val input = UploadDetails(
+        BSONObjectID.generate(),
+        UploadId.generate,
+        Reference("ABC"),
+        UploadedSuccessfully("foo.txt", "text/plain", "http:localhost:8080", size = None)
+      )
+
+      val serialized = UploadDetails.format.writes(input)
+      val output = UploadDetails.format.reads(serialized)
+
+      output.get shouldBe input
+    }
+
+    "serialize and deserialize UploadedSuccessfully status when size is known" in {
+      val input = UploadDetails(
+        BSONObjectID.generate(),
+        UploadId.generate,
+        Reference("ABC"),
+        UploadedSuccessfully("foo.txt", "text/plain", "http:localhost:8080", size = Some(123456))
+      )
 
       val serialized = UploadDetails.format.writes(input)
       val output = UploadDetails.format.reads(serialized)

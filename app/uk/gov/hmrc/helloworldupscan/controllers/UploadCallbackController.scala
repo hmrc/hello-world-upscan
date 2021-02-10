@@ -16,9 +16,10 @@
 
 package uk.gov.hmrc.helloworldupscan.controllers
 
+import play.api.Logger
+
 import java.net.URL
 import java.time.Instant
-
 import javax.inject.{Inject, Singleton}
 import play.api.libs.json._
 import play.api.mvc._
@@ -67,7 +68,11 @@ object CallbackBody {
   }
 }
 
-case class UploadDetails(uploadTimestamp: Instant, checksum: String, fileMimeType: String, fileName: String)
+case class UploadDetails(uploadTimestamp: Instant,
+                         checksum: String,
+                         fileMimeType: String,
+                         fileName: String,
+                         size: Long)
 
 case class ErrorDetails(failureReason: String, message: String)
 
@@ -77,9 +82,12 @@ class UploadCallbackController @Inject()(upscanCallbackDispatcher : UpscanCallba
                                          cc: ControllerComponents)
                                         (implicit ec : ExecutionContext) extends BackendController(cc) {
 
+  private val logger = Logger(this.getClass)
+
   val callback = Action.async(parse.json) { implicit request =>
-      withJsonBody[CallbackBody] { feedback: CallbackBody =>
-        upscanCallbackDispatcher.handleCallback(feedback).map(_ => Ok)
+    logger.info(s"Received callback notification [${Json.stringify(request.body)}]")
+    withJsonBody[CallbackBody] { feedback: CallbackBody =>
+      upscanCallbackDispatcher.handleCallback(feedback).map(_ => Ok)
     }
   }
 }

@@ -28,8 +28,13 @@ class UpscanCallbackDispatcher @Inject() (sessionStorage: UploadProgressTracker)
 
     val uploadStatus = callback match {
       case s: ReadyCallbackBody =>
-        UploadedSuccessfully(s.uploadDetails.fileName, s.uploadDetails.fileMimeType, s.downloadUrl.getFile)
-      case s: FailedCallbackBody =>
+        UploadedSuccessfully(
+          s.uploadDetails.fileName,
+          s.uploadDetails.fileMimeType,
+          s.downloadUrl.getFile,
+          Some(s.uploadDetails.size)
+        )
+      case _: FailedCallbackBody =>
         Failed
     }
 

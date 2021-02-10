@@ -37,8 +37,7 @@ class MongoBackedUploadProgressTrackerSpec extends WordSpec with MongoSpecSuppor
     "coordinate workflow" in {
       val reference = Reference("reference")
       val id = UploadId("upload-id")
-      val expectedStatus = UploadedSuccessfully("name", "mimeType", "downloadUrl")
-
+      val expectedStatus = UploadedSuccessfully("name", "mimeType", "downloadUrl", size = Some(123))
 
       await(t.requestUpload(id, reference))
       await(t.registerUploadResult(reference, expectedStatus))
