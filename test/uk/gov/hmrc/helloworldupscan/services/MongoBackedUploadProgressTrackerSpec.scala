@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,8 +37,7 @@ class MongoBackedUploadProgressTrackerSpec extends WordSpec with MongoSpecSuppor
     "coordinate workflow" in {
       val reference = Reference("reference")
       val id = UploadId("upload-id")
-      val expectedStatus = UploadedSuccessfully("name", "mimeType", "downloadUrl")
-
+      val expectedStatus = UploadedSuccessfully("name", "mimeType", "downloadUrl", size = Some(123))
 
       await(t.requestUpload(id, reference))
       await(t.registerUploadResult(reference, expectedStatus))

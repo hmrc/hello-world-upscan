@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,8 +28,13 @@ class UpscanCallbackDispatcher @Inject() (sessionStorage: UploadProgressTracker)
 
     val uploadStatus = callback match {
       case s: ReadyCallbackBody =>
-        UploadedSuccessfully(s.uploadDetails.fileName, s.uploadDetails.fileMimeType, s.downloadUrl.getFile)
-      case s: FailedCallbackBody =>
+        UploadedSuccessfully(
+          s.uploadDetails.fileName,
+          s.uploadDetails.fileMimeType,
+          s.downloadUrl.getFile,
+          Some(s.uploadDetails.size)
+        )
+      case _: FailedCallbackBody =>
         Failed
     }
 

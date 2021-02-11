@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import play.api.mvc.QueryStringBindable
 sealed trait UploadStatus
 case object InProgress extends UploadStatus
 case object Failed extends UploadStatus
-case class UploadedSuccessfully(name : String, mimeType : String, downloadUrl : String) extends UploadStatus
+case class UploadedSuccessfully(name: String, mimeType: String, downloadUrl: String, size: Option[Long]) extends UploadStatus
 
 case class UploadId(value : String) extends AnyVal
 
