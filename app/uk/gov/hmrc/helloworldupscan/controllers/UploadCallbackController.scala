@@ -17,18 +17,17 @@
 package uk.gov.hmrc.helloworldupscan.controllers
 
 import play.api.Logger
-
-import java.net.URL
-import java.time.Instant
-import javax.inject.{Inject, Singleton}
 import play.api.libs.json._
 import play.api.mvc._
 import uk.gov.hmrc.helloworldupscan.connectors.Reference
 import uk.gov.hmrc.helloworldupscan.controllers.CallbackBody._
 import uk.gov.hmrc.helloworldupscan.services.UpscanCallbackDispatcher
 import uk.gov.hmrc.helloworldupscan.utils.HttpUrlFormat
-import uk.gov.hmrc.play.bootstrap.controller.BackendController
+import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
+import java.net.URL
+import java.time.Instant
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
 
 sealed trait CallbackBody {
@@ -79,8 +78,8 @@ case class ErrorDetails(failureReason: String, message: String)
 
 @Singleton
 class UploadCallbackController @Inject()(upscanCallbackDispatcher : UpscanCallbackDispatcher,
-                                         cc: ControllerComponents)
-                                        (implicit ec : ExecutionContext) extends BackendController(cc) {
+                                         mcc: MessagesControllerComponents)
+                                        (implicit ec : ExecutionContext) extends FrontendController(mcc) {
 
   private val logger = Logger(this.getClass)
 

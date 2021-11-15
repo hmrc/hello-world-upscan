@@ -27,7 +27,7 @@ import uk.gov.hmrc.helloworldupscan.controllers.routes.UploadFormController
 import uk.gov.hmrc.helloworldupscan.model.{UploadId, UploadedSuccessfully}
 import uk.gov.hmrc.helloworldupscan.services.UploadProgressTracker
 import uk.gov.hmrc.helloworldupscan.views
-import uk.gov.hmrc.play.bootstrap.controller.FrontendController
+import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -41,6 +41,8 @@ class UploadFormController @Inject()(upscanInitiateConnector: UpscanInitiateConn
                                      submissionResultView: views.html.submission_result)
                                     (implicit appConfig: AppConfig,
                                      ec: ExecutionContext) extends FrontendController(mcc) {
+
+  val logger = Logger(this.getClass.getName)
 
   val show: Action[AnyContent] = Action.async { implicit request =>
     val uploadId           = UploadId.generate
@@ -103,8 +105,8 @@ class UploadFormController @Inject()(upscanInitiateConnector: UpscanInitiateConn
           Future.successful(BadRequest(s"Problem with a form $errors"))
         },
         _ => {
-          Logger.info("Form successfully submitted")
-          Future.successful(Redirect(UploadFormController.showSubmissionResult()))
+          logger.info("Form successfully submitted")
+          Future.successful(Redirect(UploadFormController.showSubmissionResult))
         }
       )
   }
