@@ -16,25 +16,23 @@
 
 package uk.gov.hmrc.helloworldupscan.repository
 
-import javax.inject.Inject
+
+import org.mongodb.scala.model.Filters
+import org.mongodb.scala.model.Updates.set
 import play.api.libs.json._
-import play.modules.reactivemongo.ReactiveMongoComponent
-import reactivemongo.bson.BSONObjectID
-import reactivemongo.play.json.ImplicitBSONHandlers._
 import uk.gov.hmrc.helloworldupscan.connectors.Reference
 import uk.gov.hmrc.helloworldupscan.model._
 import uk.gov.hmrc.helloworldupscan.repository.UploadDetails._
-import uk.gov.hmrc.mongo.ReactiveRepository
-import uk.gov.hmrc.mongo.json.ReactiveMongoFormats
+import uk.gov.hmrc.mongo.MongoComponent
+import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-case class UploadDetails(id : BSONObjectID, uploadId : UploadId, reference : Reference, status : UploadStatus)
+case class UploadDetails(uploadId: UploadId, reference: Reference, status: UploadStatus)
 
 object UploadDetails {
   val status = "status"
-
-  import ReactiveMongoFormats.mongoEntity
 
   val uploadedSuccessfullyFormat: OFormat[UploadedSuccessfully] = Json.format[UploadedSuccessfully]
 
@@ -56,42 +54,43 @@ object UploadDetails {
       p match {
         case InProgress => JsObject(Map("_type" -> JsString("InProgress")))
         case Failed => JsObject(Map("_type" -> JsString("Failed")))
-        case s : UploadedSuccessfully => Json.toJson(s)(uploadedSuccessfullyFormat).as[JsObject] + ("_type" -> JsString("UploadedSuccessfully"))
+        case s: UploadedSuccessfully => Json.toJson(s)(uploadedSuccessfullyFormat).as[JsObject] + ("_type" -> JsString("UploadedSuccessfully"))
       }
     }
   }
 
-  implicit val uploadStatusFormat: Format[UploadStatus] = Format(read,write)
+  implicit val uploadStatusFormat: Format[UploadStatus] = Format(read, write)
 
   implicit val idFormat: OFormat[UploadId] = Json.format[UploadId]
 
   implicit val referenceFormat: OFormat[Reference] = Json.format[Reference]
 
-  val format: Format[UploadDetails] = mongoEntity ( Json.format[UploadDetails] )
+  val format: Format[UploadDetails] = Json.format[UploadDetails]
 }
 
+class UserSessionRepository @Inject()(mongoComponent: MongoComponent)(implicit ec: ExecutionContext)
+  extends PlayMongoRepository[UploadDetails](
+    collectionName = "simpleTestRepository",
+    mongoComponent = mongoComponent,
+    domainFormat = UploadDetails.format,
+    indexes = Seq()
+  ) {
 
-class UserSessionRepository @Inject() (mongoComponent: ReactiveMongoComponent)(implicit ec : ExecutionContext)
-  extends ReactiveRepository[UploadDetails, BSONObjectID](
-  collectionName = "simpleTestRepository",
-  mongo = mongoComponent.mongoConnector.db,
-  domainFormat = UploadDetails.format,
-  idFormat = ReactiveMongoFormats.objectIdFormats
-) {
+  def insert(details: UploadDetails) = collection.insertOne(details).toFuture()
 
   def findByUploadId(uploadId: UploadId): Future[Option[UploadDetails]] =
-    find("uploadId" -> Json.toJson(uploadId)).map(_.headOption)
+    collection.find(Filters.eq("_uploadId", uploadId.value)).headOption
 
-  def updateStatus(reference : Reference, newStatus : UploadStatus): Future[UploadStatus] =
-    for (result <- findAndUpdate(
-      query = JsObject(Seq("reference" -> Json.toJson(reference))),
-      update = Json.obj(
-        "$set" -> Json.obj(
-          status -> Json.toJson(newStatus)
-        )
-      ), upsert = true)) yield {
-      result.result[UploadDetails].map(_.status).getOrElse(throw new Exception("Update failed, no document modified"))
+  def updateStatus(reference: Reference, newStatus: UploadStatus): Future[UploadStatus] = {
+    for (
+      result <- collection.findOneAndUpdate(
+        Filters.equal("reference", Json.toJson(reference)),
+        set("status", Json.toJson(newStatus))
+      ).toFutureOption()
+    ) yield {
+      result.map(_.status).getOrElse(throw new Exception("Update failed, no document modified"))
     }
+  }
 
 
 }

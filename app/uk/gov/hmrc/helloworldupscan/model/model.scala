@@ -16,21 +16,24 @@
 
 package uk.gov.hmrc.helloworldupscan.model
 
+import play.api.mvc.PathBindable
+import uk.gov.hmrc.play.binders.SimpleObjectBinder
+
 import java.util.UUID
 
-import play.api.mvc.QueryStringBindable
-
 sealed trait UploadStatus
+
 case object InProgress extends UploadStatus
+
 case object Failed extends UploadStatus
+
 case class UploadedSuccessfully(name: String, mimeType: String, downloadUrl: String, size: Option[Long]) extends UploadStatus
 
-case class UploadId(value : String) extends AnyVal
+case class UploadId(value: String) extends AnyVal
 
 object UploadId {
   def generate = UploadId(UUID.randomUUID().toString)
 
-  implicit def queryBinder(implicit stringBinder: QueryStringBindable[String]): QueryStringBindable[UploadId] =
-    stringBinder.transform(UploadId(_),_.value)
+  implicit val binder: PathBindable[UploadId] =
+    new SimpleObjectBinder[UploadId](UploadId.apply, _.value)
 }
-

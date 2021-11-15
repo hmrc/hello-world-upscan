@@ -16,13 +16,12 @@
 
 package uk.gov.hmrc.helloworldupscan.services
 
-import java.util.concurrent.atomic.AtomicReference
-import java.util.function.UnaryOperator
-
-import javax.inject.Singleton
 import uk.gov.hmrc.helloworldupscan.connectors.Reference
 import uk.gov.hmrc.helloworldupscan.model.{InProgress, UploadId, UploadStatus}
 
+import java.util.concurrent.atomic.AtomicReference
+import java.util.function.UnaryOperator
+import javax.inject.Singleton
 import scala.concurrent.Future
 
 

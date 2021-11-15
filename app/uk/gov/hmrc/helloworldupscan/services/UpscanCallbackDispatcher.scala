@@ -16,10 +16,10 @@
 
 package uk.gov.hmrc.helloworldupscan.services
 
-import javax.inject.Inject
 import uk.gov.hmrc.helloworldupscan.controllers.{CallbackBody, FailedCallbackBody, ReadyCallbackBody}
 import uk.gov.hmrc.helloworldupscan.model.{Failed, UploadedSuccessfully}
 
+import javax.inject.Inject
 import scala.concurrent.Future
 
 class UpscanCallbackDispatcher @Inject() (sessionStorage: UploadProgressTracker) {
