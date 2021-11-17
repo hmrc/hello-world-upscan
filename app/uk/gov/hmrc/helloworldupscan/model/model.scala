@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.helloworldupscan.model
 
-import play.api.libs.json._
 import play.api.mvc.QueryStringBindable
 
 import java.util.UUID
