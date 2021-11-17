@@ -16,16 +16,10 @@
 
 @import uk.gov.hmrc.helloworldupscan.config.AppConfig
 
-@this(govUKWrapper: govUKWrapper)
+@this(mainLayout: MainTemplate)
 
-@(pageTitle: String, heading: String, message: String)(implicit messages: Messages, appConfig: AppConfig, requestHeader: RequestHeader)
+@()(implicit messages: Messages, appConfig: AppConfig, requestHeader: RequestHeader)
 
-@contentHeader = {
-  <h1>@heading</h1>
+@mainLayout(title = "Your form has been submitted successfully", bodyClasses = None) {
+    <h1>Your form has been submitted successfully</h1>
 }
-
-@mainContent = {
-  <p>@message</p>
-}
-
-@govUKWrapper(appConfig = appConfig, title = pageTitle, contentHeader = Some(contentHeader), mainContent = mainContent)

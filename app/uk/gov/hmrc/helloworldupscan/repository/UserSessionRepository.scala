@@ -82,10 +82,10 @@ class UserSessionRepository @Inject()(mongoComponent: MongoComponent)(implicit e
     replaceIndexes = true
   ) {
 
-  def insert(details: UploadDetails): Future[Boolean] =
+  def insert(details: UploadDetails): Future[Unit] =
     collection.insertOne(details)
       .toFuture()
-      .map(_ => true)
+      .map(_ => ())
 
   def findByUploadId(uploadId: UploadId): Future[Option[UploadDetails]] =
     collection.find(equal("uploadId", Codecs.toBson(uploadId))).headOption()

@@ -27,7 +27,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class MongoBackedUploadProgressTracker @Inject()(repository : UserSessionRepository)(implicit ec : ExecutionContext) extends UploadProgressTracker {
 
   override def requestUpload(uploadId : UploadId, fileReference : Reference): Future[Unit] =
-    repository.insert(UploadDetails(ObjectId.get(), uploadId, fileReference, InProgress)).map(_ => ())
+    repository.insert(UploadDetails(ObjectId.get(), uploadId, fileReference, InProgress))
 
   override def registerUploadResult(fileReference: Reference, uploadStatus: UploadStatus): Future[Unit] =
     repository.updateStatus(fileReference, uploadStatus).map(_ => ())
