@@ -16,7 +16,7 @@
 
 @import uk.gov.hmrc.helloworldupscan.config.AppConfig
 
-@this(govuk_wrapper: govuk_wrapper)
+@this(govUKWrapper: govUKWrapper)
 
 @(pageTitle: String, heading: String, message: String)(implicit messages: Messages, appConfig: AppConfig, requestHeader: RequestHeader)
 
@@ -28,4 +28,4 @@
   <p>@message</p>
 }
 
-@govuk_wrapper(appConfig = appConfig, title = pageTitle, contentHeader = Some(contentHeader), mainContent = mainContent)
+@govUKWrapper(appConfig = appConfig, title = pageTitle, contentHeader = Some(contentHeader), mainContent = mainContent)

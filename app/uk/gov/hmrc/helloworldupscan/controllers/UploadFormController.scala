@@ -35,11 +35,11 @@ import scala.concurrent.{ExecutionContext, Future}
 class UploadFormController @Inject()(upscanInitiateConnector: UpscanInitiateConnector,
                                      uploadProgressTracker: UploadProgressTracker,
                                      mcc: MessagesControllerComponents,
-                                     uploadFormView: views.html.upload_form,
-                                     uploadResultView: views.html.upload_result,
-                                     submissionFormView: views.html.submission_form,
-                                     errorView: views.html.error_template,
-                                     submissionResultView: views.html.submission_result)
+                                     uploadFormView: views.html.uploadForm,
+                                     uploadResultView: views.html.uploadResult,
+                                     submissionFormView: views.html.submissionForm,
+                                     errorView: views.html.errorTemplate,
+                                     submissionResultView: views.html.submissionResult)
                                     (implicit appConfig: AppConfig,
                                      ec: ExecutionContext) extends FrontendController(mcc) with Logging {
 

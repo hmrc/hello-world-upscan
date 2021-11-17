@@ -23,14 +23,14 @@
 @this(
         govUkTemplate: GovUkTemplate,
         lh: Head,
-        header_nav: HeaderNav,
+        headerNav: HeaderNav,
         footer: Footer,
         lhServiceInfo: ServiceInfo,
         lhSidebar: Sidebar,
-        main_content_header: MainContentHeader,
-        main_content: MainContent,
-        footer_links: FooterLinks,
-        report_a_problem_link: ReportAProblemLink
+        lhMainContentHeader: MainContentHeader,
+        lhMainContent: MainContent,
+        footerLinks: FooterLinks,
+        reportAProblemLink: ReportAProblemLink
 )
 
 @(appConfig: AppConfig,
@@ -56,7 +56,7 @@
 @headerNavLinks = {}
 
 @insideHeader = {
-    @header_nav(
+    @headerNav(
       navTitle = Some("hello-world-upscan"),
       navTitleLink = None,
       showBetaLink = false,
@@ -85,14 +85,14 @@
 
 @mainContentHeader = {
     @if(contentHeader.isDefined) {
-        @main_content_header(contentHeader = contentHeader.get)
+        @lhMainContentHeader(contentHeader = contentHeader.get)
     }
 }
 
-@getHelpForm = @{report_a_problem_link(appConfig.reportAProblemPartialUrl, appConfig.reportAProblemNonJSUrl)}
+@getHelpForm = @{reportAProblemLink(appConfig.reportAProblemPartialUrl, appConfig.reportAProblemNonJSUrl)}
 
 @content = {
-    @main_content(
+    @lhMainContent(
       article = mainContent,
       mainClass = mainClass,
       mainDataAttributes = mainDataAttributes,
@@ -102,4 +102,4 @@
       sidebar = sidebar)
 }
 
-@govUkTemplate(Some(title), bodyClasses)(head, bodyEnd, insideHeader, afterHeader, footerTop, Some(footer_links()), true)(content)
+@govUkTemplate(Some(title), bodyClasses)(head, bodyEnd, insideHeader, afterHeader, footerTop, Some(footerLinks()), true)(content)

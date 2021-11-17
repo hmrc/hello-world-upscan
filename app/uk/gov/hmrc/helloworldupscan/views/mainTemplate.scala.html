@@ -17,7 +17,7 @@
 @import uk.gov.hmrc.helloworldupscan.config.AppConfig
 @import uk.gov.hmrc.play.views.html.layouts.{Article, Sidebar}
 
-@this(govuk_wrapper: govuk_wrapper, sidebarLayout: Sidebar, articleLayout: Article)
+@this(govUKWrapper: govUKWrapper, sidebarLayout: Sidebar, articleLayout: Article)
 
 @(title: String,
   sidebarLinks: Option[Html] = None,
@@ -35,7 +35,7 @@
     }
 }
 
-@govuk_wrapper(appConfig = appConfig,
+@govUKWrapper(appConfig = appConfig,
                title = title,
                mainClass = mainClass,
                bodyClasses = bodyClasses,
