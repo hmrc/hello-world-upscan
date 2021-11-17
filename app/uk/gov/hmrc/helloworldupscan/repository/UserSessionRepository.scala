@@ -39,6 +39,33 @@ object UploadDetails {
 
   implicit val objectIdFormats: Format[ObjectId] = MongoFormats.objectIdFormat
 
+  implicit val uploadedSuccessfullyFormat: OFormat[UploadedSuccessfully] = Json.format[UploadedSuccessfully]
+
+  implicit val read: Reads[UploadStatus] = new Reads[UploadStatus] {
+    override def reads(json: JsValue): JsResult[UploadStatus] = {
+      val jsObject = json.asInstanceOf[JsObject]
+      jsObject.value.get("_type") match {
+        case Some(JsString("InProgress")) => JsSuccess(InProgress)
+        case Some(JsString("Failed")) => JsSuccess(Failed)
+        case Some(JsString("UploadedSuccessfully")) => Json.fromJson[UploadedSuccessfully](jsObject)(uploadedSuccessfullyFormat)
+        case Some(value) => JsError(s"Unexpected value of _type: $value")
+        case None => JsError("Missing _type field")
+      }
+    }
+  }
+
+  implicit val write: Writes[UploadStatus] = new Writes[UploadStatus] {
+    override def writes(p: UploadStatus): JsValue = {
+      p match {
+        case InProgress => JsObject(Map("_type" -> JsString("InProgress")))
+        case Failed => JsObject(Map("_type" -> JsString("Failed")))
+        case s: UploadedSuccessfully => Json.toJson(s)(uploadedSuccessfullyFormat).as[JsObject] + ("_type" -> JsString("UploadedSuccessfully"))
+      }
+    }
+  }
+
+  implicit val uploadStatusFormat: Format[UploadStatus] = Format(read,write)
+
   implicit val idFormat: OFormat[UploadId] = Json.format[UploadId]
 
   implicit val referenceFormat: OFormat[Reference] = Json.format[Reference]
@@ -55,9 +82,10 @@ class UserSessionRepository @Inject()(mongoComponent: MongoComponent)(implicit e
     replaceIndexes = true
   ) {
 
-  def insert(details: UploadDetails) =
+  def insert(details: UploadDetails):Future[Boolean] =
     collection.insertOne(details)
       .toFuture()
+      .map(_ => true)
 
   def findByUploadId(uploadId: UploadId): Future[Option[UploadDetails]] =
     collection.find(equal("uploadId", Codecs.toBson(uploadId))).headOption()
