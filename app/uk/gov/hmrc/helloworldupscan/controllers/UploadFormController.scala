@@ -17,7 +17,7 @@
 package uk.gov.hmrc.helloworldupscan.controllers
 
 import javax.inject.{Inject, Singleton}
-import play.api.Logger
+import play.api.Logging
 import play.api.data.Form
 import play.api.data.Forms.{mapping, text}
 import play.api.mvc._
@@ -40,9 +40,7 @@ class UploadFormController @Inject()(upscanInitiateConnector: UpscanInitiateConn
                                      submissionFormView: views.html.submission_form,
                                      submissionResultView: views.html.submission_result)
                                     (implicit appConfig: AppConfig,
-                                     ec: ExecutionContext) extends FrontendController(mcc) {
-
-  val logger = Logger(this.getClass.getName)
+                                     ec: ExecutionContext) extends FrontendController(mcc) with Logging {
 
   val show: Action[AnyContent] = Action.async { implicit request =>
     val uploadId           = UploadId.generate

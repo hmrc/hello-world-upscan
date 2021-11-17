@@ -16,17 +16,18 @@
 
 package uk.gov.hmrc.helloworldupscan.repository
 
-import org.scalatest.{Matchers, WordSpec}
-import reactivemongo.bson.BSONObjectID
+import org.bson.types.ObjectId
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 import uk.gov.hmrc.helloworldupscan.connectors.Reference
 import uk.gov.hmrc.helloworldupscan.model.{Failed, InProgress, UploadId, UploadedSuccessfully}
 
-class UploadDetailsTest extends WordSpec with Matchers {
+class UploadDetailsTest extends AnyWordSpec with Matchers {
 
   "Serialization and deserialization of UploadDetails" should {
 
     "serialize and deserialize InProgress status" in {
-      val input = UploadDetails(BSONObjectID.generate(), UploadId.generate, Reference("ABC"), InProgress)
+      val input = UploadDetails(ObjectId.get(), UploadId.generate, Reference("ABC"), InProgress)
 
       val serialized = UploadDetails.format.writes(input)
       val output = UploadDetails.format.reads(serialized)
@@ -35,7 +36,7 @@ class UploadDetailsTest extends WordSpec with Matchers {
     }
 
     "serialize and deserialize Failed status" in {
-      val input = UploadDetails(BSONObjectID.generate(), UploadId.generate, Reference("ABC"), Failed)
+      val input = UploadDetails(ObjectId.get(), UploadId.generate, Reference("ABC"), Failed)
 
       val serialized = UploadDetails.format.writes(input)
       val output = UploadDetails.format.reads(serialized)
@@ -45,7 +46,7 @@ class UploadDetailsTest extends WordSpec with Matchers {
 
     "serialize and deserialize UploadedSuccessfully status when size is unknown" in {
       val input = UploadDetails(
-        BSONObjectID.generate(),
+        ObjectId.get(),
         UploadId.generate,
         Reference("ABC"),
         UploadedSuccessfully("foo.txt", "text/plain", "http:localhost:8080", size = None)
@@ -59,7 +60,7 @@ class UploadDetailsTest extends WordSpec with Matchers {
 
     "serialize and deserialize UploadedSuccessfully status when size is known" in {
       val input = UploadDetails(
-        BSONObjectID.generate(),
+        ObjectId.get(),
         UploadId.generate,
         Reference("ABC"),
         UploadedSuccessfully("foo.txt", "text/plain", "http:localhost:8080", size = Some(123456))

@@ -17,49 +17,30 @@
 package uk.gov.hmrc.helloworldupscan.repository
 
 
-import org.mongodb.scala.model.Filters
+import org.bson.types.ObjectId
+import org.mongodb.scala.bson.conversions.Bson
+import org.mongodb.scala.model.Filters.equal
+import org.mongodb.scala.model.FindOneAndUpdateOptions
 import org.mongodb.scala.model.Updates.set
 import play.api.libs.json._
 import uk.gov.hmrc.helloworldupscan.connectors.Reference
 import uk.gov.hmrc.helloworldupscan.model._
 import uk.gov.hmrc.helloworldupscan.repository.UploadDetails._
 import uk.gov.hmrc.mongo.MongoComponent
-import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
+import uk.gov.hmrc.mongo.play.json.formats.MongoFormats
+import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-case class UploadDetails(uploadId: UploadId, reference: Reference, status: UploadStatus)
+case class UploadDetails(_id: ObjectId, uploadId: UploadId, reference: Reference, status: UploadStatus)
 
 object UploadDetails {
   val status = "status"
 
+  implicit val objectIdFormats: Format[ObjectId] = MongoFormats.objectIdFormat
+
   val uploadedSuccessfullyFormat: OFormat[UploadedSuccessfully] = Json.format[UploadedSuccessfully]
-
-  val read: Reads[UploadStatus] = new Reads[UploadStatus] {
-    override def reads(json: JsValue): JsResult[UploadStatus] = {
-      val jsObject = json.asInstanceOf[JsObject]
-      jsObject.value.get("_type") match {
-        case Some(JsString("InProgress")) => JsSuccess(InProgress)
-        case Some(JsString("Failed")) => JsSuccess(Failed)
-        case Some(JsString("UploadedSuccessfully")) => Json.fromJson[UploadedSuccessfully](jsObject)(uploadedSuccessfullyFormat)
-        case Some(value) => JsError(s"Unexpected value of _type: $value")
-        case None => JsError("Missing _type field")
-      }
-    }
-  }
-
-  val write: Writes[UploadStatus] = new Writes[UploadStatus] {
-    override def writes(p: UploadStatus): JsValue = {
-      p match {
-        case InProgress => JsObject(Map("_type" -> JsString("InProgress")))
-        case Failed => JsObject(Map("_type" -> JsString("Failed")))
-        case s: UploadedSuccessfully => Json.toJson(s)(uploadedSuccessfullyFormat).as[JsObject] + ("_type" -> JsString("UploadedSuccessfully"))
-      }
-    }
-  }
-
-  implicit val uploadStatusFormat: Format[UploadStatus] = Format(read, write)
 
   implicit val idFormat: OFormat[UploadId] = Json.format[UploadId]
 
@@ -73,24 +54,25 @@ class UserSessionRepository @Inject()(mongoComponent: MongoComponent)(implicit e
     collectionName = "simpleTestRepository",
     mongoComponent = mongoComponent,
     domainFormat = UploadDetails.format,
-    indexes = Seq()
+    indexes = Seq(),
+    replaceIndexes = true
   ) {
 
-  def insert(details: UploadDetails) = collection.insertOne(details).toFuture()
+  def insert(details: UploadDetails) =
+    collection.insertOne(details)
+      .toFuture()
 
   def findByUploadId(uploadId: UploadId): Future[Option[UploadDetails]] =
-    collection.find(Filters.eq("_uploadId", uploadId.value)).headOption
+    collection.find(equal("uploadId", Codecs.toBson(uploadId))).headOption()
 
   def updateStatus(reference: Reference, newStatus: UploadStatus): Future[UploadStatus] = {
-    for (
-      result <- collection.findOneAndUpdate(
-        Filters.equal("reference", Json.toJson(reference)),
-        set("status", Json.toJson(newStatus))
-      ).toFutureOption()
-    ) yield {
-      result.map(_.status).getOrElse(throw new Exception("Update failed, no document modified"))
-    }
+    val filter: Bson                     = equal("reference", Codecs.toBson(reference))
+    val modifier: Bson                   = set("status", Codecs.toBson(newStatus))
+    val options: FindOneAndUpdateOptions = FindOneAndUpdateOptions().upsert(true)
+
+    collection
+      .findOneAndUpdate(filter, modifier, options)
+      .toFuture
+      .map(_.status)
   }
-
-
 }
