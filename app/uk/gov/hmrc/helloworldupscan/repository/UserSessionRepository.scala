@@ -18,7 +18,6 @@ package uk.gov.hmrc.helloworldupscan.repository
 
 
 import org.bson.types.ObjectId
-import org.mongodb.scala.bson.conversions.Bson
 import org.mongodb.scala.model.Filters.equal
 import org.mongodb.scala.model.FindOneAndUpdateOptions
 import org.mongodb.scala.model.Updates.set
@@ -66,12 +65,11 @@ class UserSessionRepository @Inject()(mongoComponent: MongoComponent)(implicit e
     collection.find(equal("uploadId", Codecs.toBson(uploadId))).headOption()
 
   def updateStatus(reference: Reference, newStatus: UploadStatus): Future[UploadStatus] = {
-    val filter: Bson                     = equal("reference", Codecs.toBson(reference))
-    val modifier: Bson                   = set("status", Codecs.toBson(newStatus))
-    val options: FindOneAndUpdateOptions = FindOneAndUpdateOptions().upsert(true)
-
     collection
-      .findOneAndUpdate(filter, modifier, options)
+      .findOneAndUpdate(
+        filter = equal("reference", Codecs.toBson(reference)),
+        update = set("status", Codecs.toBson(newStatus)),
+        options = FindOneAndUpdateOptions().upsert(true))
       .toFuture
       .map(_.status)
   }

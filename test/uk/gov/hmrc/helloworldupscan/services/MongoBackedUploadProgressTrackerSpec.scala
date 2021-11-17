@@ -46,6 +46,7 @@ class MongoBackedUploadProgressTrackerSpec extends AnyWordSpec
       t.registerUploadResult(reference, expectedStatus).futureValue
 
       val result = t.getUploadResult(id).futureValue
+
       result shouldBe Some(expectedStatus)
     }
   }
