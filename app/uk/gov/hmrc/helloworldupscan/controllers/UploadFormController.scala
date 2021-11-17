@@ -38,6 +38,7 @@ class UploadFormController @Inject()(upscanInitiateConnector: UpscanInitiateConn
                                      uploadFormView: views.html.upload_form,
                                      uploadResultView: views.html.upload_result,
                                      submissionFormView: views.html.submission_form,
+                                     errorView: views.html.error_template,
                                      submissionResultView: views.html.submission_result)
                                     (implicit appConfig: AppConfig,
                                      ec: ExecutionContext) extends FrontendController(mcc) with Logging {
@@ -72,7 +73,7 @@ class UploadFormController @Inject()(upscanInitiateConnector: UpscanInitiateConn
 
   def showError(errorCode: String, errorMessage: String, errorRequestId: String, key: String): Action[AnyContent] = Action {
     implicit request =>
-      Ok(views.html.error_template("Upload Error", errorMessage, s"Code: $errorCode, RequestId: $errorRequestId, FileReference: $key"))
+      Ok(errorView("Upload Error", errorMessage, s"Code: $errorCode, RequestId: $errorRequestId, FileReference: $key"))
   }
 
   private case class SampleForm(field1: String, field2: String, uploadedFileId: UploadId)
