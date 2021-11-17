@@ -32,7 +32,7 @@ import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-case class UploadDetails(_id: ObjectId, uploadId: UploadId, reference: Reference, status: UploadStatus)
+case class UploadDetails(id: ObjectId, uploadId: UploadId, reference: Reference, status: UploadStatus)
 
 object UploadDetails {
   val status = "status"
