@@ -64,7 +64,7 @@ object UploadDetails {
     }
   }
 
-  implicit val uploadStatusFormat: Format[UploadStatus] = Format(read,write)
+  implicit val uploadStatusFormat: Format[UploadStatus] = Format(read, write)
 
   implicit val idFormat: OFormat[UploadId] = Json.format[UploadId]
 
@@ -82,7 +82,7 @@ class UserSessionRepository @Inject()(mongoComponent: MongoComponent)(implicit e
     replaceIndexes = true
   ) {
 
-  def insert(details: UploadDetails):Future[Boolean] =
+  def insert(details: UploadDetails): Future[Boolean] =
     collection.insertOne(details)
       .toFuture()
       .map(_ => true)
