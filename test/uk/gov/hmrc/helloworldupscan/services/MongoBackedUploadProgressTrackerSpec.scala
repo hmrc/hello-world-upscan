@@ -20,16 +20,15 @@ import org.scalatest.concurrent.IntegrationPatience
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import uk.gov.hmrc.helloworldupscan.connectors.Reference
-import uk.gov.hmrc.helloworldupscan.model.{UploadId, UploadedSuccessfully}
-import uk.gov.hmrc.helloworldupscan.repository.{UploadDetails, UserSessionRepository}
-import uk.gov.hmrc.mongo.test.{CleanMongoCollectionSupport, PlayMongoRepositorySupport}
+import uk.gov.hmrc.helloworldupscan.model._
+import uk.gov.hmrc.helloworldupscan.repository.UserSessionRepository
+import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class MongoBackedUploadProgressTrackerSpec extends AnyWordSpec
   with Matchers
-  with PlayMongoRepositorySupport[UploadDetails]
-  with CleanMongoCollectionSupport
+  with DefaultPlayMongoRepositorySupport[UploadDetails]
   with IntegrationPatience {
 
   override lazy val repository = new UserSessionRepository(mongoComponent)

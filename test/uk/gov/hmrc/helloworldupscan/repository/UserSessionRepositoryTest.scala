@@ -20,17 +20,17 @@ import org.bson.types.ObjectId
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import uk.gov.hmrc.helloworldupscan.connectors.Reference
-import uk.gov.hmrc.helloworldupscan.model.{Failed, InProgress, UploadId, UploadedSuccessfully}
+import uk.gov.hmrc.helloworldupscan.model._
 
-class UploadDetailsTest extends AnyWordSpec with Matchers {
+class UserSessionRepositoryTest extends AnyWordSpec with Matchers {
 
   "Serialization and deserialization of UploadDetails" should {
 
     "serialize and deserialize InProgress status" in {
       val input = UploadDetails(ObjectId.get(), UploadId.generate, Reference("ABC"), InProgress)
 
-      val serialized = UploadDetails.format.writes(input)
-      val output = UploadDetails.format.reads(serialized)
+      val serialized = UserSessionRepository.mongoFormat.writes(input)
+      val output = UserSessionRepository.mongoFormat.reads(serialized)
 
       output.get shouldBe input
     }
@@ -38,8 +38,8 @@ class UploadDetailsTest extends AnyWordSpec with Matchers {
     "serialize and deserialize Failed status" in {
       val input = UploadDetails(ObjectId.get(), UploadId.generate, Reference("ABC"), Failed)
 
-      val serialized = UploadDetails.format.writes(input)
-      val output = UploadDetails.format.reads(serialized)
+      val serialized = UserSessionRepository.mongoFormat.writes(input)
+      val output = UserSessionRepository.mongoFormat.reads(serialized)
 
       output.get shouldBe input
     }
@@ -52,8 +52,8 @@ class UploadDetailsTest extends AnyWordSpec with Matchers {
         UploadedSuccessfully("foo.txt", "text/plain", "http:localhost:8080", size = None)
       )
 
-      val serialized = UploadDetails.format.writes(input)
-      val output = UploadDetails.format.reads(serialized)
+      val serialized = UserSessionRepository.mongoFormat.writes(input)
+      val output = UserSessionRepository.mongoFormat.reads(serialized)
 
       output.get shouldBe input
     }
@@ -66,8 +66,8 @@ class UploadDetailsTest extends AnyWordSpec with Matchers {
         UploadedSuccessfully("foo.txt", "text/plain", "http:localhost:8080", size = Some(123456))
       )
 
-      val serialized = UploadDetails.format.writes(input)
-      val output = UploadDetails.format.reads(serialized)
+      val serialized = UserSessionRepository.mongoFormat.writes(input)
+      val output = UserSessionRepository.mongoFormat.reads(serialized)
 
       output.get shouldBe input
     }

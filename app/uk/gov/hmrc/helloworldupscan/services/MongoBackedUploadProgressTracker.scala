@@ -18,8 +18,8 @@ package uk.gov.hmrc.helloworldupscan.services
 
 import org.bson.types.ObjectId
 import uk.gov.hmrc.helloworldupscan.connectors.Reference
-import uk.gov.hmrc.helloworldupscan.model.{InProgress, UploadId, UploadStatus}
-import uk.gov.hmrc.helloworldupscan.repository.{UploadDetails, UserSessionRepository}
+import uk.gov.hmrc.helloworldupscan.model._
+import uk.gov.hmrc.helloworldupscan.repository.UserSessionRepository
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
