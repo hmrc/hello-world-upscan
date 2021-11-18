@@ -17,7 +17,7 @@
 package uk.gov.hmrc.helloworldupscan.controllers
 
 import javax.inject.{Inject, Singleton}
-import play.api.Logger
+import play.api.Logging
 import play.api.data.Form
 import play.api.data.Forms.{mapping, text}
 import play.api.mvc._
@@ -27,7 +27,7 @@ import uk.gov.hmrc.helloworldupscan.controllers.routes.UploadFormController
 import uk.gov.hmrc.helloworldupscan.model.{UploadId, UploadedSuccessfully}
 import uk.gov.hmrc.helloworldupscan.services.UploadProgressTracker
 import uk.gov.hmrc.helloworldupscan.views
-import uk.gov.hmrc.play.bootstrap.controller.FrontendController
+import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -35,12 +35,13 @@ import scala.concurrent.{ExecutionContext, Future}
 class UploadFormController @Inject()(upscanInitiateConnector: UpscanInitiateConnector,
                                      uploadProgressTracker: UploadProgressTracker,
                                      mcc: MessagesControllerComponents,
-                                     uploadFormView: views.html.upload_form,
-                                     uploadResultView: views.html.upload_result,
-                                     submissionFormView: views.html.submission_form,
-                                     submissionResultView: views.html.submission_result)
+                                     uploadFormView: views.html.UploadForm,
+                                     uploadResultView: views.html.UploadResult,
+                                     submissionFormView: views.html.SubmissionForm,
+                                     errorView: views.html.ErrorTemplate,
+                                     submissionResultView: views.html.SubmissionResult)
                                     (implicit appConfig: AppConfig,
-                                     ec: ExecutionContext) extends FrontendController(mcc) {
+                                     ec: ExecutionContext) extends FrontendController(mcc) with Logging {
 
   val show: Action[AnyContent] = Action.async { implicit request =>
     val uploadId           = UploadId.generate
@@ -72,7 +73,7 @@ class UploadFormController @Inject()(upscanInitiateConnector: UpscanInitiateConn
 
   def showError(errorCode: String, errorMessage: String, errorRequestId: String, key: String): Action[AnyContent] = Action {
     implicit request =>
-      Ok(views.html.error_template("Upload Error", errorMessage, s"Code: $errorCode, RequestId: $errorRequestId, FileReference: $key"))
+      Ok(errorView("Upload Error", errorMessage, s"Code: $errorCode, RequestId: $errorRequestId, FileReference: $key"))
   }
 
   private case class SampleForm(field1: String, field2: String, uploadedFileId: UploadId)
@@ -103,8 +104,8 @@ class UploadFormController @Inject()(upscanInitiateConnector: UpscanInitiateConn
           Future.successful(BadRequest(s"Problem with a form $errors"))
         },
         _ => {
-          Logger.info("Form successfully submitted")
-          Future.successful(Redirect(UploadFormController.showSubmissionResult()))
+          logger.info("Form successfully submitted")
+          Future.successful(Redirect(UploadFormController.showSubmissionResult))
         }
       )
   }

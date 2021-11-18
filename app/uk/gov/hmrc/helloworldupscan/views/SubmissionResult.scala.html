@@ -1,4 +1,4 @@
-/*
+@*
  * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,19 +12,14 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+ *@
 
-package uk.gov.hmrc.helloworldupscan.config
+@import uk.gov.hmrc.helloworldupscan.config.AppConfig
 
-import javax.inject.Inject
-import play.api.http.HttpFilters
-import play.api.mvc.EssentialFilter
-import play.filters.csrf.CSRFFilter
-import uk.gov.hmrc.play.bootstrap.filters.FrontendFilters
+@this(mainLayout: MainTemplate)
 
-class HelloWorldFilters @Inject() (frontendFilters: FrontendFilters) extends HttpFilters {
-  override def filters: Seq[EssentialFilter] = frontendFilters.filters.map {
-    case f: CSRFFilter => new FilteringCSRFFilter(f)
-    case other => other
-  }
+@()(implicit messages: Messages, appConfig: AppConfig, requestHeader: RequestHeader)
+
+@mainLayout(title = "Your form has been submitted successfully", bodyClasses = None) {
+    <h1>Your form has been submitted successfully</h1>
 }

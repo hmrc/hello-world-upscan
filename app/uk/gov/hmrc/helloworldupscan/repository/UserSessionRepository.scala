@@ -16,82 +16,101 @@
 
 package uk.gov.hmrc.helloworldupscan.repository
 
-import javax.inject.Inject
+
+import org.bson.types.ObjectId
+import org.mongodb.scala.model.Filters.equal
+import org.mongodb.scala.model.Updates.set
+import org.mongodb.scala.model.{FindOneAndUpdateOptions, IndexModel, IndexOptions, Indexes}
+import play.api.libs.functional.syntax._
 import play.api.libs.json._
-import play.modules.reactivemongo.ReactiveMongoComponent
-import reactivemongo.bson.BSONObjectID
-import reactivemongo.play.json.ImplicitBSONHandlers._
 import uk.gov.hmrc.helloworldupscan.connectors.Reference
 import uk.gov.hmrc.helloworldupscan.model._
-import uk.gov.hmrc.helloworldupscan.repository.UploadDetails._
-import uk.gov.hmrc.mongo.ReactiveRepository
-import uk.gov.hmrc.mongo.json.ReactiveMongoFormats
+import uk.gov.hmrc.mongo.MongoComponent
+import uk.gov.hmrc.mongo.play.json.formats.MongoFormats
+import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
 
+import javax.inject.Inject
+import scala.Function.unlift
 import scala.concurrent.{ExecutionContext, Future}
 
-case class UploadDetails(id : BSONObjectID, uploadId : UploadId, reference : Reference, status : UploadStatus)
-
-object UploadDetails {
+object UserSessionRepository {
   val status = "status"
 
-  import ReactiveMongoFormats.mongoEntity
-
-  val uploadedSuccessfullyFormat: OFormat[UploadedSuccessfully] = Json.format[UploadedSuccessfully]
-
-  val read: Reads[UploadStatus] = new Reads[UploadStatus] {
-    override def reads(json: JsValue): JsResult[UploadStatus] = {
-      val jsObject = json.asInstanceOf[JsObject]
-      jsObject.value.get("_type") match {
-        case Some(JsString("InProgress")) => JsSuccess(InProgress)
-        case Some(JsString("Failed")) => JsSuccess(Failed)
-        case Some(JsString("UploadedSuccessfully")) => Json.fromJson[UploadedSuccessfully](jsObject)(uploadedSuccessfullyFormat)
-        case Some(value) => JsError(s"Unexpected value of _type: $value")
-        case None => JsError("Missing _type field")
+  private implicit val uploadStatusFormat: Format[UploadStatus] = {
+    implicit val uploadedSuccessfullyFormat: OFormat[UploadedSuccessfully] = Json.format[UploadedSuccessfully]
+    val read: Reads[UploadStatus] = new Reads[UploadStatus] {
+      override def reads(json: JsValue): JsResult[UploadStatus] = {
+        val jsObject = json.asInstanceOf[JsObject]
+        jsObject.value.get("_type") match {
+          case Some(JsString("InProgress")) => JsSuccess(InProgress)
+          case Some(JsString("Failed")) => JsSuccess(Failed)
+          case Some(JsString("UploadedSuccessfully")) => Json.fromJson[UploadedSuccessfully](jsObject)(uploadedSuccessfullyFormat)
+          case Some(value) => JsError(s"Unexpected value of _type: $value")
+          case None => JsError("Missing _type field")
+        }
       }
     }
-  }
 
-  val write: Writes[UploadStatus] = new Writes[UploadStatus] {
-    override def writes(p: UploadStatus): JsValue = {
-      p match {
-        case InProgress => JsObject(Map("_type" -> JsString("InProgress")))
-        case Failed => JsObject(Map("_type" -> JsString("Failed")))
-        case s : UploadedSuccessfully => Json.toJson(s)(uploadedSuccessfullyFormat).as[JsObject] + ("_type" -> JsString("UploadedSuccessfully"))
+    val write: Writes[UploadStatus] = new Writes[UploadStatus] {
+      override def writes(p: UploadStatus): JsValue = {
+        p match {
+          case InProgress => JsObject(Map("_type" -> JsString("InProgress")))
+          case Failed => JsObject(Map("_type" -> JsString("Failed")))
+          case s: UploadedSuccessfully => Json.toJson(s)(uploadedSuccessfullyFormat).as[JsObject] + ("_type" -> JsString("UploadedSuccessfully"))
+        }
       }
     }
+
+    Format(read, write)
   }
 
-  implicit val uploadStatusFormat: Format[UploadStatus] = Format(read,write)
+  private implicit val idFormat: OFormat[UploadId] =
+    Format.at[String](__ \ "value")
+      .inmap[UploadId](UploadId.apply, unlift(UploadId.unapply))
 
-  implicit val idFormat: OFormat[UploadId] = Json.format[UploadId]
+  private implicit val referenceFormat: OFormat[Reference] =
+    Format.at[String](__ \ "value")
+      .inmap[Reference](Reference.apply, unlift(Reference.unapply))
 
-  implicit val referenceFormat: OFormat[Reference] = Json.format[Reference]
-
-  val format: Format[UploadDetails] = mongoEntity ( Json.format[UploadDetails] )
+  private[repository] val mongoFormat: OFormat[UploadDetails] = {
+    implicit val objectIdFormats: Format[ObjectId] = MongoFormats.objectIdFormat
+    ((__ \ "_id").format[ObjectId]
+      ~ (__ \ "uploadId").format[UploadId]
+      ~ (__ \ "reference").format[Reference]
+      ~ (__ \ "status").format[UploadStatus]
+      ) (UploadDetails.apply _, unlift(UploadDetails.unapply _))
+  }
 }
 
+class UserSessionRepository @Inject()(mongoComponent: MongoComponent)(implicit ec: ExecutionContext)
+  extends PlayMongoRepository[UploadDetails](
+    collectionName = "simpleTestRepository",
+    mongoComponent = mongoComponent,
+    domainFormat = UserSessionRepository.mongoFormat,
+    indexes = Seq(
+      IndexModel(Indexes.ascending("uploadId"), IndexOptions().unique(true)),
+      IndexModel(Indexes.ascending("reference"), IndexOptions().unique(true))
+    ),
+    replaceIndexes = true
+  ) {
 
-class UserSessionRepository @Inject() (mongoComponent: ReactiveMongoComponent)(implicit ec : ExecutionContext)
-  extends ReactiveRepository[UploadDetails, BSONObjectID](
-  collectionName = "simpleTestRepository",
-  mongo = mongoComponent.mongoConnector.db,
-  domainFormat = UploadDetails.format,
-  idFormat = ReactiveMongoFormats.objectIdFormats
-) {
+  import UserSessionRepository._
+
+  def insert(details: UploadDetails): Future[Unit] =
+    collection.insertOne(details)
+      .toFuture()
+      .map(_ => ())
 
   def findByUploadId(uploadId: UploadId): Future[Option[UploadDetails]] =
-    find("uploadId" -> Json.toJson(uploadId)).map(_.headOption)
+    collection.find(equal("uploadId", Codecs.toBson(uploadId))).headOption()
 
-  def updateStatus(reference : Reference, newStatus : UploadStatus): Future[UploadStatus] =
-    for (result <- findAndUpdate(
-      query = JsObject(Seq("reference" -> Json.toJson(reference))),
-      update = Json.obj(
-        "$set" -> Json.obj(
-          status -> Json.toJson(newStatus)
-        )
-      ), upsert = true)) yield {
-      result.result[UploadDetails].map(_.status).getOrElse(throw new Exception("Update failed, no document modified"))
-    }
-
-
+  def updateStatus(reference: Reference, newStatus: UploadStatus): Future[UploadStatus] = {
+    collection
+      .findOneAndUpdate(
+        filter = equal("reference", Codecs.toBson(reference)),
+        update = set("status", Codecs.toBson(newStatus)),
+        options = FindOneAndUpdateOptions().upsert(true))
+      .toFuture
+      .map(_.status)
+  }
 }

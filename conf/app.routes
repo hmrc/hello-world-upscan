@@ -11,5 +11,5 @@ GET        /hello-world/success                uk.gov.hmrc.helloworldupscan.cont
 GET        /hello-world/error                  uk.gov.hmrc.helloworldupscan.controllers.UploadFormController.showError(errorCode: String, errorMessage: String, errorRequestId: String, key: String)
 
 # upload file notification callback
-#NOCSRF
++ nocsrf
 POST       /hello-world/upscan-callback        uk.gov.hmrc.helloworldupscan.controllers.UploadCallbackController.callback

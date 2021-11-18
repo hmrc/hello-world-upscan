@@ -16,14 +16,15 @@
 
 package uk.gov.hmrc.helloworldupscan.controllers
 
-import java.net.URL
-import java.time.Instant
-
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 import play.api.libs.json.{JsSuccess, Json}
 import uk.gov.hmrc.helloworldupscan.connectors.Reference
 
-class CallbackBodyTest extends WordSpec with Matchers {
+import java.net.URL
+import java.time.Instant
+
+class CallbackBodyTest extends AnyWordSpec with Matchers {
 
   "CallbackBody JSON reader" should {
     "be able to deserialize successful body" in {

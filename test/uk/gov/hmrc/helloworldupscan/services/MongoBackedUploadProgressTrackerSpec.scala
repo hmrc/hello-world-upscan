@@ -16,22 +16,24 @@
 
 package uk.gov.hmrc.helloworldupscan.services
 
-import org.scalatest.{BeforeAndAfterEach, Matchers, WordSpec}
-import play.modules.reactivemongo.ReactiveMongoComponent
+import org.scalatest.concurrent.IntegrationPatience
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 import uk.gov.hmrc.helloworldupscan.connectors.Reference
-import uk.gov.hmrc.helloworldupscan.model.{UploadId, UploadedSuccessfully}
+import uk.gov.hmrc.helloworldupscan.model._
 import uk.gov.hmrc.helloworldupscan.repository.UserSessionRepository
-import uk.gov.hmrc.mongo.{Awaiting, MongoConnector, MongoSpecSupport}
+import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
 
-class MongoBackedUploadProgressTrackerSpec extends WordSpec with MongoSpecSupport with Awaiting with Matchers with BeforeAndAfterEach {
+import scala.concurrent.ExecutionContext.Implicits.global
 
-  val mongoComponent = new MongoComponent(mongoUri)
-  val repo = new UserSessionRepository(mongoComponent)
-  val t = new MongoBackedUploadProgressTracker(repo)
+class MongoBackedUploadProgressTrackerSpec extends AnyWordSpec
+  with Matchers
+  with DefaultPlayMongoRepositorySupport[UploadDetails]
+  with IntegrationPatience {
 
-  override def beforeEach(): Unit = {
-    await(repo.removeAll())
-  }
+  override lazy val repository = new UserSessionRepository(mongoComponent)
+
+  val t = new MongoBackedUploadProgressTracker(repository)
 
   "MongoBackedUploadProgressTracker" should {
     "coordinate workflow" in {
@@ -39,13 +41,12 @@ class MongoBackedUploadProgressTrackerSpec extends WordSpec with MongoSpecSuppor
       val id = UploadId("upload-id")
       val expectedStatus = UploadedSuccessfully("name", "mimeType", "downloadUrl", size = Some(123))
 
-      await(t.requestUpload(id, reference))
-      await(t.registerUploadResult(reference, expectedStatus))
-      await(t.getUploadResult(id)) shouldBe Some(expectedStatus)
+      t.requestUpload(id, reference).futureValue
+      t.registerUploadResult(reference, expectedStatus).futureValue
+
+      val result = t.getUploadResult(id).futureValue
+
+      result shouldBe Some(expectedStatus)
     }
   }
-}
-
-class MongoComponent(mongoConnectionUri: String) extends ReactiveMongoComponent {
-  override def mongoConnector: MongoConnector = MongoConnector(mongoConnectionUri)
 }
