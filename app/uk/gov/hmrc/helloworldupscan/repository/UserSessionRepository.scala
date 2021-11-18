@@ -19,8 +19,8 @@ package uk.gov.hmrc.helloworldupscan.repository
 
 import org.bson.types.ObjectId
 import org.mongodb.scala.model.Filters.equal
-import org.mongodb.scala.model.{FindOneAndUpdateOptions, IndexModel, IndexOptions, Indexes}
 import org.mongodb.scala.model.Updates.set
+import org.mongodb.scala.model.{FindOneAndUpdateOptions, IndexModel, IndexOptions, Indexes}
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import uk.gov.hmrc.helloworldupscan.connectors.Reference
@@ -74,11 +74,11 @@ object UserSessionRepository {
 
   private[repository] val mongoFormat: OFormat[UploadDetails] = {
     implicit val objectIdFormats: Format[ObjectId] = MongoFormats.objectIdFormat
-    ( (__ \ "_id"     ).format[ObjectId]
-      ~ (__ \ "uploadId"  ).format[UploadId]
-      ~ (__ \ "reference"        ).format[Reference]
-      ~ (__ \ "status"     ).format[UploadStatus]
-      )(UploadDetails.apply _, unlift(UploadDetails.unapply _))
+    ((__ \ "_id").format[ObjectId]
+      ~ (__ \ "uploadId").format[UploadId]
+      ~ (__ \ "reference").format[Reference]
+      ~ (__ \ "status").format[UploadStatus]
+      ) (UploadDetails.apply _, unlift(UploadDetails.unapply _))
   }
 }
 
