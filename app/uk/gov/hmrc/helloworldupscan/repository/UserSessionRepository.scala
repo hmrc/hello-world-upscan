@@ -29,7 +29,7 @@ import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.formats.MongoFormats
 import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
 
-import javax.inject.Inject
+import javax.inject.{Inject, Singleton}
 import scala.Function.unlift
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -82,6 +82,7 @@ object UserSessionRepository {
   }
 }
 
+@Singleton
 class UserSessionRepository @Inject()(mongoComponent: MongoComponent)(implicit ec: ExecutionContext)
   extends PlayMongoRepository[UploadDetails](
     collectionName = "simpleTestRepository",
