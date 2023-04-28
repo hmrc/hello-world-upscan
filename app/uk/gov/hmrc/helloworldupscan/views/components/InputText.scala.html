@@ -1,5 +1,5 @@
 @*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,19 +23,19 @@
         maxlength: Int = 1000
 )(implicit messages: Messages)
 
-<div class="form-group @if(field.hasErrors){form-group-error}">
-    <label class="form-label" for="@{field.id}">
+<div class="govuk-form-group @if(field.hasErrors){govuk-form-group--error}">
+    <label class="govuk-label" for="@{field.id}">
         <div class="@if(labelClass.nonEmpty){@labelClass}">@label</div>
         @if(hint.nonEmpty){
             <div class="form-hint">@hint</div>
         }
         @field.errors.map { error =>
-            <span class="error-message" id="error-message-@{field.id}-input">@messages(error.message, error.args: _*)</span>
+            <span class="govuk-error-message" id="error-message-@{field.id}-input">@messages(error.message, error.args: _*)</span>
         }
     </label>
-    <div class="form-control-wrapper">
+    <div>
         <input
-        class="form-control @inputClass"
+        class="govuk-input @inputClass"
         type="text"
         maxlength=@maxlength
         id="@{field.id}"

@@ -1,1 +1,3 @@
+service.name = hello-world-upscan
+service.homePageUrl = /hello-world-upscan/hello-world
 site.continue = Continue

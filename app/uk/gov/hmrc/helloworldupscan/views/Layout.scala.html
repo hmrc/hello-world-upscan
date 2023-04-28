@@ -14,21 +14,30 @@
  * limitations under the License.
  *@
 
-@import uk.gov.hmrc.govukfrontend.views.html.components.Text
+@import uk.gov.hmrc.hmrcfrontend.views.html.helpers.HmrcStandardFooter
 @import play.api.mvc.RequestHeader
 
-@this(layout: Layout)
-
+@this(
+  govukLayout       : GovUKWrapper,
+  head              : Head,
+  hmrcStandardFooter: HmrcStandardFooter,
+  scripts           : Scripts
+)
 @(
-  pageTitle: String,
-  heading  : String,
-  message  : String
+  pageTitle   : Option[String] = None,
+  headBlock   : Option[Html]   = None,
+  bodyEndBlock: Option[Html]   = None
+)(contentBlock: Html
 )(implicit
   request : RequestHeader,
   messages: Messages
 )
 
-@layout(pageTitle = Some(pageTitle)) {
-    <h1 class="govuk-heading-xl">@{Text(heading).asHtml}</h1>
-    <p class="govuk-body">@{Text(message).asHtml}</p>
-}
+@govukLayout(
+  pageTitle          = pageTitle,
+  headBlock          = Some(head(headBlock)),
+  beforeContentBlock = None,
+  footerBlock        = Some(hmrcStandardFooter()),
+  scriptsBlock       = Some(scripts()),
+  bodyEndBlock       = bodyEndBlock
+)(contentBlock)

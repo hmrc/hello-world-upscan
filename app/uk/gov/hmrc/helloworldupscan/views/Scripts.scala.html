@@ -14,21 +14,10 @@
  * limitations under the License.
  *@
 
-@import uk.gov.hmrc.govukfrontend.views.html.components.Text
+@import views.html.helper.CSPNonce
 @import play.api.mvc.RequestHeader
 
-@this(layout: Layout)
+@this()
 
-@(
-  pageTitle: String,
-  heading  : String,
-  message  : String
-)(implicit
-  request : RequestHeader,
-  messages: Messages
-)
-
-@layout(pageTitle = Some(pageTitle)) {
-    <h1 class="govuk-heading-xl">@{Text(heading).asHtml}</h1>
-    <p class="govuk-body">@{Text(message).asHtml}</p>
-}
+@()(implicit request: RequestHeader)
+<script @CSPNonce.attr src='@controllers.routes.Assets.versioned("lib/govuk-frontend/govuk/all.js")'></script>

@@ -1,5 +1,5 @@
 @*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,41 +16,44 @@
 
 @import uk.gov.hmrc.helloworldupscan.config.AppConfig
 @import uk.gov.hmrc.helloworldupscan.model._
+@import play.api.mvc.RequestHeader
 
 @this(mainLayout: MainTemplate)
 
-@(uploadId: UploadId, status : UploadStatus)(implicit messages: Messages, appConfig: AppConfig, requestHeader: RequestHeader)
+@(uploadId: UploadId, status : UploadStatus)(implicit messages: Messages, appConfig: AppConfig, request: RequestHeader)
 
 @refreshHeader = {
  <meta http-equiv="refresh" content="1"/>
 }
 
-@mainLayout(title = "Verifying uploaded file", bodyClasses = None, customHead = {
+@mainLayout(title = Some("Verifying uploaded file"), customHead = {
 status match {
 case InProgress => Some(refreshHeader)
 case _ => None
 }
 }) {
-    <h1>Verifying uploaded file</h1>
+    <h1 class="govuk-heading-l">Verifying uploaded file</h1>
 
-    @status match {
-     case InProgress => { Waiting for the file to be scanned }
-     case s : UploadedSuccessfully => { Upload of <b>@s.name</b> successful! }
-     case Failed => { File has been rejected. }
-    }
+    <p class="govuk-body">
+        @status match {
+        case InProgress => { Waiting for the file to be scanned }
+        case s : UploadedSuccessfully => { Upload of <b>@s.name</b> successful! }
+        case Failed => { File has been rejected. }
+        }
+    </p>
 
     @status match {
         case s : UploadedSuccessfully => {
-            <div class="section">
+            <p class="govuk-body">
                 <a href="@uk.gov.hmrc.helloworldupscan.controllers.routes.UploadFormController.showSubmissionForm(uploadId)">
-                    <button class="button">Next</button>
+                    <button class="govuk-button govuk-button--secondary">Next</button>
                 </a>
-            </div>
+            </p>
         }
         case _ => {
-            <div class="section">
-                <button class="button" disabled="disabled">Next</button>
-            </div>
+            <p class="govuk-body">
+                <button class="govuk-button govuk-button--secondary" disabled="disabled">Next</button>
+            </p>
         }
     }
 }

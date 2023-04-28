@@ -1,5 +1,5 @@
 @*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,35 +14,30 @@
  * limitations under the License.
  *@
 
-@import uk.gov.hmrc.helloworldupscan.config.AppConfig
-@import uk.gov.hmrc.play.views.html.layouts.{Article, Sidebar}
+@import uk.gov.hmrc.hmrcfrontend.views.html.helpers.HmrcStandardFooter
+@import play.api.mvc.RequestHeader
 
-@this(govUKWrapper: GovUKWrapper, sidebarLayout: Sidebar, articleLayout: Article)
-
-@(title: String,
-  sidebarLinks: Option[Html] = None,
-  contentHeader: Option[Html] = None,
-  bodyClasses: Option[String] = None,
-  mainClass: Option[String] = None,
-  scriptElem: Option[Html] = None,
-  customHead: Option[Html] = None)(mainContent: Html)(implicit messages: Messages, appConfig: AppConfig, requestHeader: RequestHeader)
-
-@serviceInfoContent = {}
-
-@sidebar = {
-    @if(sidebarLinks.isDefined) {
-        sidebarLayout(sidebarLinks.get, Some("sidebar"))
-    }
-}
-
-@govUKWrapper(appConfig = appConfig,
-               title = title,
-               mainClass = mainClass,
-               bodyClasses = bodyClasses,
-               sidebar = sidebar,
-               contentHeader = contentHeader,
-               mainContent = articleLayout(mainContent),
-               serviceInfoContent = serviceInfoContent,
-               scriptElem = scriptElem,
-               customHead = customHead
+@this(
+  govukLayout       : GovUKWrapper,
+  head              : Head,
+  hmrcStandardFooter: HmrcStandardFooter,
+  scripts           : Scripts
 )
+@(
+  title       : Option[String] = None,
+  customHead  : Option[Html]   = None,
+  bodyEndBlock: Option[Html]   = None
+)(contentBlock: Html
+)(implicit
+  request : RequestHeader,
+  messages: Messages
+)
+
+@govukLayout(
+  pageTitle          = title,
+  headBlock          = Some(head(customHead)),
+  beforeContentBlock = None,
+  footerBlock        = Some(hmrcStandardFooter()),
+  scriptsBlock       = Some(scripts()),
+  bodyEndBlock       = bodyEndBlock
+)(contentBlock)
