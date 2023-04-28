@@ -1,5 +1,5 @@
 @*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,92 +14,63 @@
  * limitations under the License.
  *@
 
-@import uk.gov.hmrc.helloworldupscan.config.AppConfig
-@import play.twirl.api.HtmlFormat
-@import views.html.layouts.GovUkTemplate
-@import uk.gov.hmrc.play.views.html.layouts._
-@import uk.gov.hmrc.play.views.html.helpers.ReportAProblemLink
+@import uk.gov.hmrc.govukfrontend.views.html.components._
+@import play.api.mvc.RequestHeader
 
 @this(
-        govUkTemplate: GovUkTemplate,
-        lh: Head,
-        headerNav: HeaderNav,
-        footer: Footer,
-        lhServiceInfo: ServiceInfo,
-        lhSidebar: Sidebar,
-        lhMainContentHeader: MainContentHeader,
-        lhMainContent: MainContent,
-        footerLinks: FooterLinks,
-        reportAProblemLink: ReportAProblemLink
+  govukTemplate: GovukTemplate,
+  govukHeader: GovukHeader,
+  govukFooter: GovukFooter,
+  govukBackLink: GovukBackLink
 )
 
-@(appConfig: AppConfig,
-  title: String,
-  mainClass: Option[String] = None,
-  mainDataAttributes: Option[Html] = None,
-  bodyClasses: Option[String] = None,
-  sidebar: Html = HtmlFormat.empty,
-  contentHeader: Option[Html] = None,
-  customHead: Option[Html] = None,
-  mainContent: Html = HtmlFormat.empty,
-  serviceInfoContent: Html = HtmlFormat.empty,
-  scriptElem: Option[Html] = None)(implicit messages: Messages, requestHeader: RequestHeader)
+@(
+  pageTitle: Option[String] = None,
+  headBlock: Option[Html] = None,
+  headerBlock: Option[Html] = None,
+  beforeContentBlock: Option[Html] = None,
+  footerBlock: Option[Html] = None,
+  footerItems: Seq[FooterItem] = Seq.empty,
+  bodyEndBlock: Option[Html] = None,
+  scriptsBlock: Option[Html] = None
+)(contentBlock: Html)(implicit messages: Messages, request : RequestHeader)
 
-@head = {
-    @lh(
-      linkElem = None,
-      headScripts = None)
-    <meta name="format-detection" content="telephone=no" />
-    @customHead
+@headerDefault = {
+  @headerBlock.getOrElse {
+    @govukHeader(Header(
+      homepageUrl = Some("https://www.gov.uk/"),
+      serviceName = Some(messages("service.name")),
+      serviceUrl = Some(messages("service.homePageUrl")),
+      containerClasses = None))
+  }
 }
 
-@headerNavLinks = {}
-
-@insideHeader = {
-    @headerNav(
-      navTitle = Some("hello-world-upscan"),
-      navTitleLink = None,
-      showBetaLink = false,
-      navLinks = Some(headerNavLinks))
+@footerDefault = {
+  @footerBlock.getOrElse {
+    @govukFooter(new Footer(meta = Some(Meta(items = Some(footerItems)))))
+  }
 }
 
-@afterHeader = {}
-
-@bodyEnd = {
-    @footer(
-      analyticsToken = Some(appConfig.analyticsToken),
-      analyticsHost = appConfig.analyticsHost,
-      ssoUrl = None,
-      scriptElem = scriptElem,
-      gaCalls = None)
+@bodyEndDefault = {
+  @bodyEndBlock
+  @scriptsBlock
 }
 
-@footerTop = {}
-
-@serviceInfo = {
-    @lhServiceInfo(
-      betaBanner = HtmlFormat.empty,
-      includeGridWrapper = false,
-      serviceInfoContent = Some(serviceInfoContent))
+@mainContentDefault = {
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column">
+    @contentBlock
+    </div>
+  </div>
 }
 
-@mainContentHeader = {
-    @if(contentHeader.isDefined) {
-        @lhMainContentHeader(contentHeader = contentHeader.get)
-    }
-}
-
-@getHelpForm = @{reportAProblemLink(appConfig.reportAProblemPartialUrl, appConfig.reportAProblemNonJSUrl)}
-
-@content = {
-    @lhMainContent(
-      article = mainContent,
-      mainClass = mainClass,
-      mainDataAttributes = mainDataAttributes,
-      mainContentHeader = mainContentHeader,
-      serviceInfo = serviceInfo,
-      getHelpForm = getHelpForm,
-      sidebar = sidebar)
-}
-
-@govUkTemplate(Some(title), bodyClasses)(head, bodyEnd, insideHeader, afterHeader, footerTop, Some(footerLinks()), true)(content)
+@govukTemplate(
+  htmlLang = Some(messages.lang.code),
+  pageTitle = pageTitle,
+  headBlock = headBlock,
+  headerBlock = headerDefault,
+  beforeContentBlock = beforeContentBlock,
+  footerBlock = footerDefault,
+  mainClasses = Some("govuk-main-wrapper--auto-spacing"),
+  bodyEndBlock = Some(bodyEndDefault)
+)(mainContentDefault)
