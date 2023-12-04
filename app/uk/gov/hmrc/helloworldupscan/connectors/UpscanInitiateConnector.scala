@@ -20,10 +20,10 @@ import javax.inject.Inject
 import play.api.libs.json.{Json, OFormat, Reads, Writes}
 import play.mvc.Http.HeaderNames
 import uk.gov.hmrc.helloworldupscan.config.AppConfig
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.bootstrap.http.HttpClient
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient}
 import uk.gov.hmrc.upscan.services.{UpscanFileReference, UpscanInitiateResponse}
 import PreparedUpload._
+import uk.gov.hmrc.http.HttpReads.Implicits._
 
 import scala.concurrent.{ExecutionContext, Future}
 

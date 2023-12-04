@@ -21,7 +21,7 @@
 
 @this(mainLayout: MainTemplate)
 
-@(form: Form[_], uploadedFile: UploadedSuccessfully)(implicit request: RequestHeader, messages: Messages, appConfig: AppConfig)
+@(form: Form[_], uploadedFile: UploadedSuccessfully)(implicit request: RequestHeader, messages: Messages)
 
 @mainLayout(title = Some("Hello from hello-world-upscan")) {
     <h1 class="govuk-heading-l">Please fill in additional information</h1>

@@ -49,21 +49,16 @@ object CallbackBody {
   // must be in scope to create Reads for ReadyCallbackBody
   private implicit val urlFormat: Format[URL] = HttpUrlFormat.format
 
-  implicit val uploadDetailsReads = Json.reads[UploadDetails]
+  implicit val uploadDetailsReads     : Reads[UploadDetails]      = Json.reads[UploadDetails]
+  implicit val errorDetailsReads      : Reads[ErrorDetails]       = Json.reads[ErrorDetails]
+  implicit val readyCallbackBodyReads : Reads[ReadyCallbackBody]  = Json.reads[ReadyCallbackBody]
+  implicit val failedCallbackBodyReads: Reads[FailedCallbackBody] = Json.reads[FailedCallbackBody]
 
-  implicit val errorDetailsReads = Json.reads[ErrorDetails]
-
-  implicit val readyCallbackBodyReads = Json.reads[ReadyCallbackBody]
-
-  implicit val failedCallbackBodyReads = Json.reads[FailedCallbackBody]
-
-  implicit val reads = new Reads[CallbackBody] {
-    override def reads(json: JsValue): JsResult[CallbackBody] = json \ "fileStatus" match {
-      case JsDefined(JsString("READY")) => implicitly[Reads[ReadyCallbackBody]].reads(json)
-      case JsDefined(JsString("FAILED")) => implicitly[Reads[FailedCallbackBody]].reads(json)
-      case JsDefined(value) => JsError(s"Invalid type distriminator: $value")
-      case JsUndefined() => JsError(s"Missing type distriminator")
-    }
+  implicit val reads: Reads[CallbackBody] = (json: JsValue) => json \ "fileStatus" match {
+    case JsDefined(JsString("READY"))  => implicitly[Reads[ReadyCallbackBody]].reads(json)
+    case JsDefined(JsString("FAILED")) => implicitly[Reads[FailedCallbackBody]].reads(json)
+    case JsDefined(value)              => JsError(s"Invalid type discriminator: $value")
+    case _                             => JsError(s"Missing type discriminator")
   }
 }
 
