@@ -97,6 +97,8 @@ class UserSessionRepository @Inject()(mongoComponent: MongoComponent)(implicit e
 
   import UserSessionRepository._
 
+  override lazy val requiresTtlIndex: Boolean = false // example repo, never deployed to prod
+
   def insert(details: UploadDetails): Future[Unit] =
     collection.insertOne(details)
       .toFuture()
@@ -111,7 +113,7 @@ class UserSessionRepository @Inject()(mongoComponent: MongoComponent)(implicit e
         filter = equal("reference", Codecs.toBson(reference)),
         update = set("status", Codecs.toBson(newStatus)),
         options = FindOneAndUpdateOptions().upsert(true))
-      .toFuture
+      .toFuture()
       .map(_.status)
   }
 }

@@ -20,7 +20,7 @@
 
 @this(mainLayout: MainTemplate)
 
-@(upscanInitiateResponse : UpscanInitiateResponse)(implicit messages: Messages, appConfig: AppConfig, request : RequestHeader)
+@(upscanInitiateResponse : UpscanInitiateResponse)(implicit messages: Messages, request : RequestHeader)
 
 @mainLayout(title = Some("Please upload a file")) {
     <h1 class="govuk-heading-l">Please upload the file</h1>
