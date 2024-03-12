@@ -1,0 +1,6 @@
+# Typically, the callback endpoint would be defined in your backend service
+# that is hosted in the protected zone.
+
+# upload file notification callback
++ nocsrf
+POST       /hello-world/upscan-callback        uk.gov.hmrc.helloworldupscan.controllers.internal.UploadCallbackController.callback()
