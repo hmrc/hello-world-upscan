@@ -1,3 +1,4 @@
 # Add all the application routes to the app.routes file
 ->         /hello-world-upscan        app.Routes
+->         /internal                  internal.Routes
 ->         /                          health.Routes
