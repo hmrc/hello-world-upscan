@@ -26,7 +26,7 @@
 @mainLayout(title = Some("Hello from hello-world-upscan")) {
     <h1 class="govuk-heading-l">Please fill in additional information</h1>
 
-    <form action="@uk.gov.hmrc.helloworldupscan.controllers.routes.UploadFormController.submitFormWithFile()" method="post">
+    <form action="@uk.gov.hmrc.helloworldupscan.controllers.routes.UploadFormController.submitFormWithFile" method="post">
         @CSRF.formField
 
         <input type="hidden" name="uploadedFileId" value="@form.data("uploadedFileId")"/>

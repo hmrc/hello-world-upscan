@@ -23,11 +23,11 @@ import play.api.data.Forms.{mapping, text}
 import play.api.mvc._
 import uk.gov.hmrc.helloworldupscan.config.AppConfig
 import uk.gov.hmrc.helloworldupscan.connectors.{Reference, UpscanInitiateConnector}
+import uk.gov.hmrc.helloworldupscan.controllers.routes.UploadFormController
 import uk.gov.hmrc.helloworldupscan.model.{UploadId, UploadedSuccessfully}
 import uk.gov.hmrc.helloworldupscan.services.UploadProgressTracker
 import uk.gov.hmrc.helloworldupscan.views
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
-import uk.gov.hmrc.helloworldupscan.controllers.routes
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -45,7 +45,7 @@ class UploadFormController @Inject()(upscanInitiateConnector: UpscanInitiateConn
 
   val show: Action[AnyContent] = Action.async { implicit request =>
     val uploadId           = UploadId.generate
-    val successRedirectUrl = appConfig.uploadRedirectTargetBase + routes.UploadFormController.showResult(uploadId).url
+    val successRedirectUrl = appConfig.uploadRedirectTargetBase + UploadFormController.showResult(uploadId).url
     for {
       upscanInitiateResponse <- upscanInitiateConnector.initiateV1(Some(successRedirectUrl))
       _                      <- uploadProgressTracker.requestUpload(uploadId, Reference(upscanInitiateResponse.fileReference.reference))
@@ -54,7 +54,7 @@ class UploadFormController @Inject()(upscanInitiateConnector: UpscanInitiateConn
 
   val showV2: Action[AnyContent] = Action.async { implicit request =>
     val uploadId           = UploadId.generate
-    val successRedirectUrl = appConfig.uploadRedirectTargetBase + routes.UploadFormController.showResult(uploadId).url
+    val successRedirectUrl = appConfig.uploadRedirectTargetBase + UploadFormController.showResult(uploadId).url
     val errorRedirectUrl   = appConfig.uploadRedirectTargetBase + "/hello-world-upscan/hello-world/error"
     for {
       upscanInitiateResponse <- upscanInitiateConnector.initiateV2(Some(successRedirectUrl), Some(errorRedirectUrl))
@@ -105,7 +105,7 @@ class UploadFormController @Inject()(upscanInitiateConnector: UpscanInitiateConn
         },
         _ => {
           logger.info("Form successfully submitted")
-          Future.successful(Redirect(routes.UploadFormController.showSubmissionResult()))
+          Future.successful(Redirect(UploadFormController.showSubmissionResult))
         }
       )
   }

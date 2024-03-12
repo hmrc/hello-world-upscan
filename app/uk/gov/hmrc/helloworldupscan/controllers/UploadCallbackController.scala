@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.helloworldupscan.controllers.internal
+package uk.gov.hmrc.helloworldupscan.controllers
 
 import play.api.Logger
 import play.api.libs.json._
 import play.api.mvc._
 import uk.gov.hmrc.helloworldupscan.connectors.Reference
-import uk.gov.hmrc.helloworldupscan.controllers.internal.CallbackBody._
+import uk.gov.hmrc.helloworldupscan.controllers.CallbackBody._
 import uk.gov.hmrc.helloworldupscan.services.UpscanCallbackDispatcher
 import uk.gov.hmrc.helloworldupscan.utils.HttpUrlFormat
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController

@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.helloworldupscan.services
 
-import uk.gov.hmrc.helloworldupscan.controllers.internal.{CallbackBody, FailedCallbackBody, ReadyCallbackBody}
+import uk.gov.hmrc.helloworldupscan.controllers.{CallbackBody, FailedCallbackBody, ReadyCallbackBody}
 import uk.gov.hmrc.helloworldupscan.model.{Failed, UploadedSuccessfully}
 
 import javax.inject.Inject
