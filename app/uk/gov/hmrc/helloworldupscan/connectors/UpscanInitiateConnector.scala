@@ -34,8 +34,8 @@ case class UpscanInitiateRequestV1(
   callbackUrl: String,
   successRedirect: Option[String] = None,
   minimumFileSize: Option[Int]    = None,
-  maximumFileSize: Option[Int]    = Some(512))
-    extends UpscanInitiateRequest
+  maximumFileSize: Option[Int]    = None
+) extends UpscanInitiateRequest
 
 // TODO expectedContentType is also an optional value
 case class UpscanInitiateRequestV2(
@@ -43,8 +43,8 @@ case class UpscanInitiateRequestV2(
   successRedirect: Option[String] = None,
   errorRedirect: Option[String]   = None,
   minimumFileSize: Option[Int]    = None,
-  maximumFileSize: Option[Int]    = Some(512))
-    extends UpscanInitiateRequest
+  maximumFileSize: Option[Int]    = None
+) extends UpscanInitiateRequest
 
 case class UploadForm(href: String, fields: Map[String, String])
 
