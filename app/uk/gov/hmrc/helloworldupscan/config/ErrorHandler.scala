@@ -26,7 +26,6 @@ import uk.gov.hmrc.helloworldupscan.views
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class ErrorHandler @Inject()(errorView: views.html.ErrorTemplate, val messagesApi: MessagesApi, implicit val ec: ExecutionContext) extends FrontendErrorHandler {
+class ErrorHandler @Inject()(errorView: views.html.ErrorTemplate, val messagesApi: MessagesApi, implicit val ec: ExecutionContext) extends FrontendErrorHandler:
   override def standardErrorTemplate(pageTitle: String, heading: String, message: String)(implicit request: RequestHeader): Future[Html] =
     Future.successful(errorView(pageTitle, heading, message))
-}

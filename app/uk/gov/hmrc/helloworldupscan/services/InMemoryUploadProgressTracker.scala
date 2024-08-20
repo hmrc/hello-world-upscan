@@ -34,14 +34,13 @@ class InMemoryUploadProgressTracker extends UploadProgressTracker {
 
   def getUploadResult(id : UploadId): Future[Option[UploadStatus]] = Future.successful(entries.get.find(_.uploadId == id).map(_.uploadStatus))
 
-  override def requestUpload(uploadId: UploadId, fileReference: Reference): Future[Unit] = {
+  override def requestUpload(uploadId: UploadId, fileReference: Reference): Future[Unit] =
     entries.updateAndGet(new UnaryOperator[Set[Entry]] {
       override def apply(t: Set[Entry]): Set[Entry] = t.filterNot(in => in.uploadId == uploadId|| in.reference == fileReference) + Entry(uploadId, fileReference, InProgress)
     })
     Future.successful(())
-  }
 
-  override def registerUploadResult(reference: Reference, uploadStatus: UploadStatus): Future[Unit] = {
+  override def registerUploadResult(reference: Reference, uploadStatus: UploadStatus): Future[Unit] =
     entries.updateAndGet(new UnaryOperator[Set[Entry]] {
       override def apply(t: Set[Entry]): Set[Entry] = {
         val existing = t.find(_.reference == reference).getOrElse(throw new RuntimeException("Doesn't exist"))
@@ -49,5 +48,4 @@ class InMemoryUploadProgressTracker extends UploadProgressTracker {
       }
     })
     Future.successful(())
-  }
 }

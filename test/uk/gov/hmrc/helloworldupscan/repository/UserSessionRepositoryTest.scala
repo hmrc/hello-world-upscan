@@ -22,29 +22,27 @@ import org.scalatest.wordspec.AnyWordSpec
 import uk.gov.hmrc.helloworldupscan.connectors.Reference
 import uk.gov.hmrc.helloworldupscan.model._
 
-class UserSessionRepositoryTest extends AnyWordSpec with Matchers {
+class UserSessionRepositoryTest extends AnyWordSpec with Matchers:
 
-  "Serialization and deserialization of UploadDetails" should {
+  "Serialization and deserialization of UploadDetails" should:
 
-    "serialize and deserialize InProgress status" in {
+    "serialize and deserialize InProgress status" in:
       val input = UploadDetails(ObjectId.get(), UploadId.generate, Reference("ABC"), InProgress)
 
       val serialized = UserSessionRepository.mongoFormat.writes(input)
       val output = UserSessionRepository.mongoFormat.reads(serialized)
 
       output.get shouldBe input
-    }
 
-    "serialize and deserialize Failed status" in {
+    "serialize and deserialize Failed status" in:
       val input = UploadDetails(ObjectId.get(), UploadId.generate, Reference("ABC"), Failed)
 
       val serialized = UserSessionRepository.mongoFormat.writes(input)
       val output = UserSessionRepository.mongoFormat.reads(serialized)
 
       output.get shouldBe input
-    }
 
-    "serialize and deserialize UploadedSuccessfully status when size is unknown" in {
+    "serialize and deserialize UploadedSuccessfully status when size is unknown" in:
       val input = UploadDetails(
         ObjectId.get(),
         UploadId.generate,
@@ -56,9 +54,8 @@ class UserSessionRepositoryTest extends AnyWordSpec with Matchers {
       val output = UserSessionRepository.mongoFormat.reads(serialized)
 
       output.get shouldBe input
-    }
 
-    "serialize and deserialize UploadedSuccessfully status when size is known" in {
+    "serialize and deserialize UploadedSuccessfully status when size is known" in:
       val input = UploadDetails(
         ObjectId.get(),
         UploadId.generate,
@@ -70,6 +67,3 @@ class UserSessionRepositoryTest extends AnyWordSpec with Matchers {
       val output = UserSessionRepository.mongoFormat.reads(serialized)
 
       output.get shouldBe input
-    }
-  }
-}

@@ -22,7 +22,7 @@ import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 @Singleton
 class AppConfig @Inject()(configuration: Configuration,
-                          servicesConfig: ServicesConfig) {
+                          servicesConfig: ServicesConfig):
 
   lazy val initiateUrl              = servicesConfig.baseUrl("upscan-initiate") + "/upscan/initiate"
   lazy val initiateV2Url            = servicesConfig.baseUrl("upscan-initiate") + "/upscan/v2/initiate"
@@ -40,4 +40,3 @@ class AppConfig @Inject()(configuration: Configuration,
 
   private def loadConfig(key: String) =
     configuration.getOptional[String](key).getOrElse(throw new Exception(s"Missing configuration key: $key"))
-}

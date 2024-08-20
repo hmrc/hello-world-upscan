@@ -53,55 +53,49 @@ case class UploadForm(href: String, fields: Map[String, String])
 
 case class Reference(value: String) extends AnyVal
 
-object Reference {
+object Reference:
   implicit val referenceReader: Reads[Reference] = Reads.StringReads.map(Reference(_))
-}
 
 case class PreparedUpload(reference: Reference, uploadRequest: UploadForm)
 
-object UpscanInitiateRequestV1 {
+object UpscanInitiateRequestV1:
   implicit val format: OFormat[UpscanInitiateRequestV1] = Json.format[UpscanInitiateRequestV1]
-}
 
-object UpscanInitiateRequestV2 {
+object UpscanInitiateRequestV2:
   implicit val format: OFormat[UpscanInitiateRequestV2] = Json.format[UpscanInitiateRequestV2]
-}
 
-object PreparedUpload {
+object PreparedUpload:
 
   implicit val uploadFormFormat: Reads[UploadForm] = Json.reads[UploadForm]
 
   implicit val format: Reads[PreparedUpload] = Json.reads[PreparedUpload]
-}
 
-class UpscanInitiateConnector @Inject()(httpClient: HttpClientV2, appConfig: AppConfig)(implicit ec: ExecutionContext) {
+class UpscanInitiateConnector @Inject()(httpClient: HttpClientV2, appConfig: AppConfig)(implicit ec: ExecutionContext):
 
   private val headers = Map(
     HeaderNames.CONTENT_TYPE -> "application/json"
   )
 
-  def initiateV1(redirectOnSuccess: Option[String])(implicit hc: HeaderCarrier): Future[UpscanInitiateResponse] = {
+  def initiateV1(redirectOnSuccess: Option[String])(implicit hc: HeaderCarrier): Future[UpscanInitiateResponse] =
     val request = UpscanInitiateRequestV1(
       callbackUrl = appConfig.callbackEndpointTarget,
       successRedirect = redirectOnSuccess
     )
     initiate(appConfig.initiateUrl, request)
-  }
 
   def initiateV2(redirectOnSuccess: Option[String], redirectOnError: Option[String])
-                (implicit hc: HeaderCarrier): Future[UpscanInitiateResponse] = {
+                (implicit hc: HeaderCarrier): Future[UpscanInitiateResponse] =
     val request = UpscanInitiateRequestV2(
       callbackUrl = appConfig.callbackEndpointTarget,
       successRedirect = redirectOnSuccess,
       errorRedirect = redirectOnError
     )
     initiate(appConfig.initiateV2Url, request)
-  }
 
   private def initiate[T](url: String, request: T)(
     implicit hc: HeaderCarrier,
     wts: Writes[T]): Future[UpscanInitiateResponse] =
-    for {
+    for
       response <- httpClient.post(url"$url")
                     .withBody(Json.toJson(request))
                     .setHeader(headers.toSeq: _*)
@@ -109,6 +103,5 @@ class UpscanInitiateConnector @Inject()(httpClient: HttpClientV2, appConfig: App
       fileReference = UpscanFileReference(response.reference.value)
       postTarget    = response.uploadRequest.href
       formFields    = response.uploadRequest.fields
-    } yield UpscanInitiateResponse(fileReference, postTarget, formFields)
+    yield UpscanInitiateResponse(fileReference, postTarget, formFields)
 
-}

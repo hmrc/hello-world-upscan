@@ -22,15 +22,14 @@ import play.api.libs.json._
 
 import scala.util.Try
 
-object HttpUrlFormat {
+object HttpUrlFormat:
 
-  implicit val format: Format[URL] = new Format[URL] {
+  implicit val format: Format[URL] = new Format[URL]:
 
     override def reads(json: JsValue): JsResult[URL] =
-      json match {
+      json match
         case JsString(s) => parseUrl(s).map(JsSuccess(_)).getOrElse(invalidUrlError)
         case _           => invalidUrlError
-      }
 
     private def parseUrl(s: String): Option[URL] = Try(new URL(s)).toOption
 
@@ -38,5 +37,3 @@ object HttpUrlFormat {
       JsError(Seq(JsPath() -> Seq(JsonValidationError("error.expected.url"))))
 
     override def writes(o: URL): JsValue = JsString(o.toString)
-  }
-}

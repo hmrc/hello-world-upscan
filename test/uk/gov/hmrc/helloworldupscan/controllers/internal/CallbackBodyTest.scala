@@ -24,10 +24,10 @@ import uk.gov.hmrc.helloworldupscan.connectors.Reference
 import java.net.URL
 import java.time.Instant
 
-class CallbackBodyTest extends AnyWordSpec with Matchers {
+class CallbackBodyTest extends AnyWordSpec with Matchers:
 
-  "CallbackBody JSON reader" should {
-    "be able to deserialize successful body" in {
+  "CallbackBody JSON reader" should:
+    "be able to deserialize successful body" in:
 
       val body =
         """
@@ -61,9 +61,8 @@ class CallbackBodyTest extends AnyWordSpec with Matchers {
         )
         )
 
-    }
 
-    "should be able to deserialize failed body" in {
+    "should be able to deserialize failed body" in:
 
       val body =
         """
@@ -87,7 +86,4 @@ class CallbackBodyTest extends AnyWordSpec with Matchers {
           )
         ))
 
-    }
-  }
 
-}
