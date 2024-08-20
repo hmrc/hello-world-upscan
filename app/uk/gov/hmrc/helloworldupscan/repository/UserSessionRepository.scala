@@ -21,6 +21,7 @@ import org.bson.types.ObjectId
 import org.mongodb.scala.model.Filters.equal
 import org.mongodb.scala.model.Updates.set
 import org.mongodb.scala.model.{FindOneAndUpdateOptions, IndexModel, IndexOptions, Indexes}
+import org.mongodb.scala.SingleObservableFuture
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import uk.gov.hmrc.helloworldupscan.connectors.Reference
@@ -30,7 +31,6 @@ import uk.gov.hmrc.mongo.play.json.formats.MongoFormats
 import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
 
 import javax.inject.{Inject, Singleton}
-import scala.Function.unlift
 import scala.concurrent.{ExecutionContext, Future}
 
 object UserSessionRepository {
@@ -66,11 +66,11 @@ object UserSessionRepository {
 
   private implicit val idFormat: OFormat[UploadId] =
     Format.at[String](__ \ "value")
-      .inmap[UploadId](UploadId.apply, unlift(UploadId.unapply))
+      .inmap[UploadId](UploadId.apply, _.value)
 
   private implicit val referenceFormat: OFormat[Reference] =
     Format.at[String](__ \ "value")
-      .inmap[Reference](Reference.apply, unlift(Reference.unapply))
+      .inmap[Reference](Reference.apply, _.value)
 
   private[repository] val mongoFormat: OFormat[UploadDetails] = {
     implicit val objectIdFormats: Format[ObjectId] = MongoFormats.objectIdFormat
@@ -78,7 +78,7 @@ object UserSessionRepository {
       ~ (__ \ "uploadId").format[UploadId]
       ~ (__ \ "reference").format[Reference]
       ~ (__ \ "status").format[UploadStatus]
-      ) (UploadDetails.apply _, unlift(UploadDetails.unapply _))
+      ) (UploadDetails.apply, Tuple.fromProductTyped _)
   }
 }
 

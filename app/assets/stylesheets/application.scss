@@ -1,5 +1,6 @@
-$govuk-assets-path: "/hello-world-upscan/assets/lib/govuk-frontend/govuk/assets/";
+$govuk-assets-path: "/hello-world-upscan/assets/lib/govuk-frontend/dist/govuk/assets/";
 $hmrc-assets-path: "/hello-world-upscan/assets/lib/hmrc-frontend/hmrc/";
+$govuk-suppressed-warnings: "govuk-typography-scale-14";
 
-@import "lib/govuk-frontend/govuk/all";
+@import "lib/govuk-frontend/dist/govuk/all";
 @import "lib/hmrc-frontend/hmrc/all";

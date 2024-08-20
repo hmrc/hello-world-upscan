@@ -27,7 +27,6 @@ import uk.gov.hmrc.helloworldupscan.model.{UploadId, UploadedSuccessfully}
 import uk.gov.hmrc.helloworldupscan.services.UploadProgressTracker
 import uk.gov.hmrc.helloworldupscan.views
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
-import uk.gov.hmrc.helloworldupscan.controllers.routes
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -83,7 +82,7 @@ class UploadFormController @Inject()(upscanInitiateConnector: UpscanInitiateConn
       "field1"         -> text,
       "field2"         -> text,
       "uploadedFileId" -> text.transform[UploadId](UploadId(_), _.value)
-    )(SampleForm.apply)(SampleForm.unapply)
+    )(SampleForm.apply)(o => Some(Tuple.fromProductTyped(o)))
   )
 
   def showSubmissionForm(uploadId: UploadId): Action[AnyContent] = Action.async { implicit request =>

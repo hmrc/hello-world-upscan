@@ -31,7 +31,7 @@ class MongoBackedUploadProgressTrackerSpec extends AnyWordSpec
   with DefaultPlayMongoRepositorySupport[UploadDetails]
   with IntegrationPatience {
 
-  override lazy val repository = new UserSessionRepository(mongoComponent)
+  override val repository: UserSessionRepository = new UserSessionRepository(mongoComponent)
 
   val t = new MongoBackedUploadProgressTracker(repository)
 

@@ -16,11 +16,11 @@
 
 package uk.gov.hmrc.helloworldupscan.controllers.internal
 
-import play.api.Logger
-import play.api.libs.json._
-import play.api.mvc._
+import play.api.Logging
+import play.api.libs.json.*
+import play.api.mvc.*
 import uk.gov.hmrc.helloworldupscan.connectors.Reference
-import uk.gov.hmrc.helloworldupscan.controllers.internal.CallbackBody._
+import uk.gov.hmrc.helloworldupscan.controllers.internal.CallbackBody.*
 import uk.gov.hmrc.helloworldupscan.services.UpscanCallbackDispatcher
 import uk.gov.hmrc.helloworldupscan.utils.HttpUrlFormat
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
@@ -31,7 +31,7 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
 
 sealed trait CallbackBody {
-  def reference : Reference
+  def reference: Reference
 }
 
 case class ReadyCallbackBody(
@@ -72,15 +72,13 @@ case class ErrorDetails(failureReason: String, message: String)
 
 
 @Singleton
-class UploadCallbackController @Inject()(upscanCallbackDispatcher : UpscanCallbackDispatcher,
+class UploadCallbackController @Inject()(upscanCallbackDispatcher: UpscanCallbackDispatcher,
                                          mcc: MessagesControllerComponents)
-                                        (implicit ec : ExecutionContext) extends FrontendController(mcc) {
-
-  private val logger = Logger(this.getClass)
+                                        (implicit ec: ExecutionContext) extends FrontendController(mcc) with Logging {
 
   val callback = Action.async(parse.json) { implicit request =>
     logger.info(s"Received callback notification [${Json.stringify(request.body)}]")
-    withJsonBody[CallbackBody] { feedback: CallbackBody =>
+    withJsonBody[CallbackBody] { feedback =>
       upscanCallbackDispatcher.handleCallback(feedback).map(_ => Ok)
     }
   }
