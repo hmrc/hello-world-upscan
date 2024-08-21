@@ -3,7 +3,7 @@
 
 This is a demo of upscan, and how to integrate with it.
 
-    sm --start UPSCAN_STUB
+    sm2 --start UPSCAN_STUB
     sbt run
 
 And then navigate to one of the following:
