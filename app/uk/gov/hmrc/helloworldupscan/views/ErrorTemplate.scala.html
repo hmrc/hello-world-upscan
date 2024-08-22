@@ -15,20 +15,20 @@
  *@
 
 @import uk.gov.hmrc.govukfrontend.views.html.components.Text
-@import play.api.mvc.RequestHeader
 
-@this(layout: Layout)
+@this(
+  layout   : Layout,
+)
 
-@(
-  pageTitle: String,
-  heading  : String,
-  message  : String
+@(pageTitle: String,
+  heading: String,
+  message: String
 )(implicit
   request : RequestHeader,
   messages: Messages
 )
 
 @layout(pageTitle = Some(pageTitle)) {
-    <h1 class="govuk-heading-xl">@{Text(heading).asHtml}</h1>
-    <p class="govuk-body">@{Text(message).asHtml}</p>
+  <h1 class="govuk-heading-xl">@{Text(heading).asHtml}</h1>
+  <p class="govuk-body">@{Text(message).asHtml}</p>
 }

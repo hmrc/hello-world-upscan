@@ -16,10 +16,10 @@
 
 @import play.api.mvc.RequestHeader
 
-@this(mainLayout: MainTemplate)
+@this(layout: Layout)
 
 @()(implicit messages: Messages, request : RequestHeader)
 
-@mainLayout(title = Some("Your form has been submitted successfully")) {
+@layout(pageTitle = Some("Your form has been submitted successfully")) {
     <h1 class="govuk-heading-l">Your form has been submitted successfully</h1>
 }

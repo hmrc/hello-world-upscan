@@ -16,8 +16,9 @@
 
 @import uk.gov.hmrc.helloworldupscan.model._
 @import play.api.mvc.RequestHeader
+@import uk.gov.hmrc.hmrcfrontend.views.viewmodels.hmrcstandardpage.TemplateOverrides
 
-@this(mainLayout: MainTemplate)
+@this(layout: Layout)
 
 @(uploadId: UploadId, status : UploadStatus)(implicit messages: Messages, request: RequestHeader)
 
@@ -25,12 +26,15 @@
  <meta http-equiv="refresh" content="1"/>
 }
 
-@mainLayout(title = Some("Verifying uploaded file"), customHead = {
-status match {
-case InProgress => Some(refreshHeader)
-case _ => None
-}
-}) {
+@layout(
+    pageTitle         = Some("Verifying uploaded file"),
+    templateOverrides = TemplateOverrides(
+                            additionalHeadBlock = status match {
+                                                    case InProgress => Some(refreshHeader)
+                                                    case _          => None
+                                                  }
+                        )
+) {
     <h1 class="govuk-heading-l">Verifying uploaded file</h1>
 
     <p class="govuk-body">
