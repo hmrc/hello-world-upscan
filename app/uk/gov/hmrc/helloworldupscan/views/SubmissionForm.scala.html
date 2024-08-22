@@ -18,11 +18,11 @@
 @import uk.gov.hmrc.helloworldupscan.model._
 @import play.api.mvc.RequestHeader
 
-@this(mainLayout: MainTemplate)
+@this(layout: Layout)
 
 @(form: Form[_], uploadedFile: UploadedSuccessfully)(implicit request: RequestHeader, messages: Messages)
 
-@mainLayout(title = Some("Hello from hello-world-upscan")) {
+@layout(pageTitle = Some("Hello from hello-world-upscan")) {
     <h1 class="govuk-heading-l">Please fill in additional information</h1>
 
     <form action="@uk.gov.hmrc.helloworldupscan.controllers.routes.UploadFormController.submitFormWithFile()" method="post">

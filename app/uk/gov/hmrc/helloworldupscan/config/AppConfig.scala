@@ -40,3 +40,6 @@ class AppConfig @Inject()(configuration: Configuration,
 
   private def loadConfig(key: String) =
     configuration.getOptional[String](key).getOrElse(throw new Exception(s"Missing configuration key: $key"))
+
+  val welshLanguageSupportEnabled: Boolean =
+    configuration.getOptional[Boolean]("features.welsh-language-support").getOrElse(false)

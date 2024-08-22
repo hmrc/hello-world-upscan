@@ -14,30 +14,24 @@
  * limitations under the License.
  *@
 
-@import uk.gov.hmrc.hmrcfrontend.views.html.helpers.HmrcStandardFooter
-@import play.api.mvc.RequestHeader
+ @import uk.gov.hmrc.helloworldupscan.config.AppConfig
+ @import uk.gov.hmrc.hmrcfrontend.views.html.helpers.HmrcStandardPage
+ @import uk.gov.hmrc.hmrcfrontend.views.viewmodels.hmrcstandardpage.{HmrcStandardPageParams, TemplateOverrides}
 
-@this(
-  govukLayout       : GovUKWrapper,
-  head              : Head,
-  hmrcStandardFooter: HmrcStandardFooter,
-  scripts           : Scripts
-)
-@(
-  pageTitle   : Option[String] = None,
-  headBlock   : Option[Html]   = None,
-  bodyEndBlock: Option[Html]   = None
-)(contentBlock: Html
-)(implicit
-  request : RequestHeader,
-  messages: Messages
-)
+ @this(
+   appConfig        : AppConfig,
+   hmrcStandardPage : HmrcStandardPage,
+ )
 
-@govukLayout(
-  pageTitle          = pageTitle,
-  headBlock          = Some(head(headBlock)),
-  beforeContentBlock = None,
-  footerBlock        = Some(hmrcStandardFooter()),
-  scriptsBlock       = Some(scripts()),
-  bodyEndBlock       = bodyEndBlock
-)(contentBlock)
+ @(
+   pageTitle: Option[String]            = None,
+   templateOverrides: TemplateOverrides = TemplateOverrides()
+ )(contentBlock: Html)(implicit request: RequestHeader, messages: Messages)
+
+ @hmrcStandardPage(
+   HmrcStandardPageParams(
+     pageTitle                   = pageTitle,
+     isWelshTranslationAvailable = appConfig.welshLanguageSupportEnabled,
+     templateOverrides           = templateOverrides
+   )
+ )(contentBlock)

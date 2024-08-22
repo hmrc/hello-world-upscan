@@ -17,11 +17,11 @@
 @import uk.gov.hmrc.upscan.services._
 @import play.api.mvc.RequestHeader
 
-@this(mainLayout: MainTemplate)
+@this(layout: Layout)
 
 @(upscanInitiateResponse : UpscanInitiateResponse)(implicit messages: Messages, request : RequestHeader)
 
-@mainLayout(title = Some("Please upload a file")) {
+@layout(pageTitle = Some("Please upload a file")) {
     <h1 class="govuk-heading-l">Please upload the file</h1>
 
     <form action="@upscanInitiateResponse.postTarget" method="post" enctype="multipart/form-data">
