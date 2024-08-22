@@ -31,12 +31,12 @@ class MongoBackedUploadProgressTrackerSpec extends AnyWordSpec
   with DefaultPlayMongoRepositorySupport[UploadDetails]
   with IntegrationPatience {
 
-  override lazy val repository = new UserSessionRepository(mongoComponent)
+  override val repository: UserSessionRepository = new UserSessionRepository(mongoComponent)
 
   val t = new MongoBackedUploadProgressTracker(repository)
 
-  "MongoBackedUploadProgressTracker" should {
-    "coordinate workflow" in {
+  "MongoBackedUploadProgressTracker" should:
+    "coordinate workflow" in:
       val reference = Reference("reference")
       val id = UploadId("upload-id")
       val expectedStatus = UploadedSuccessfully("name", "mimeType", "downloadUrl", size = Some(123))
@@ -47,6 +47,4 @@ class MongoBackedUploadProgressTrackerSpec extends AnyWordSpec
       val result = t.getUploadResult(id).futureValue
 
       result shouldBe Some(expectedStatus)
-    }
-  }
 }

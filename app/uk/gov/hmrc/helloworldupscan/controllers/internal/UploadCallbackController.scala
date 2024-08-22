@@ -16,11 +16,11 @@
 
 package uk.gov.hmrc.helloworldupscan.controllers.internal
 
-import play.api.Logger
-import play.api.libs.json._
-import play.api.mvc._
+import play.api.Logging
+import play.api.libs.json.*
+import play.api.mvc.*
 import uk.gov.hmrc.helloworldupscan.connectors.Reference
-import uk.gov.hmrc.helloworldupscan.controllers.internal.CallbackBody._
+import uk.gov.hmrc.helloworldupscan.controllers.internal.CallbackBody.*
 import uk.gov.hmrc.helloworldupscan.services.UpscanCallbackDispatcher
 import uk.gov.hmrc.helloworldupscan.utils.HttpUrlFormat
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
@@ -30,9 +30,8 @@ import java.time.Instant
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
 
-sealed trait CallbackBody {
-  def reference : Reference
-}
+sealed trait CallbackBody:
+  def reference: Reference
 
 case class ReadyCallbackBody(
                               reference: Reference,
@@ -45,7 +44,7 @@ case class FailedCallbackBody(
                                failureDetails: ErrorDetails
                              ) extends CallbackBody
 
-object CallbackBody {
+object CallbackBody:
   // must be in scope to create Reads for ReadyCallbackBody
   private implicit val urlFormat: Format[URL] = HttpUrlFormat.format
 
@@ -54,13 +53,11 @@ object CallbackBody {
   implicit val readyCallbackBodyReads : Reads[ReadyCallbackBody]  = Json.reads[ReadyCallbackBody]
   implicit val failedCallbackBodyReads: Reads[FailedCallbackBody] = Json.reads[FailedCallbackBody]
 
-  implicit val reads: Reads[CallbackBody] = (json: JsValue) => json \ "fileStatus" match {
+  implicit val reads: Reads[CallbackBody] = (json: JsValue) => json \ "fileStatus" match
     case JsDefined(JsString("READY"))  => implicitly[Reads[ReadyCallbackBody]].reads(json)
     case JsDefined(JsString("FAILED")) => implicitly[Reads[FailedCallbackBody]].reads(json)
     case JsDefined(value)              => JsError(s"Invalid type discriminator: $value")
     case _                             => JsError(s"Missing type discriminator")
-  }
-}
 
 case class UploadDetails(uploadTimestamp: Instant,
                          checksum: String,
@@ -72,16 +69,13 @@ case class ErrorDetails(failureReason: String, message: String)
 
 
 @Singleton
-class UploadCallbackController @Inject()(upscanCallbackDispatcher : UpscanCallbackDispatcher,
+class UploadCallbackController @Inject()(upscanCallbackDispatcher: UpscanCallbackDispatcher,
                                          mcc: MessagesControllerComponents)
-                                        (implicit ec : ExecutionContext) extends FrontendController(mcc) {
-
-  private val logger = Logger(this.getClass)
+                                        (implicit ec: ExecutionContext) extends FrontendController(mcc) with Logging:
 
   val callback = Action.async(parse.json) { implicit request =>
     logger.info(s"Received callback notification [${Json.stringify(request.body)}]")
-    withJsonBody[CallbackBody] { feedback: CallbackBody =>
+    withJsonBody[CallbackBody] { feedback =>
       upscanCallbackDispatcher.handleCallback(feedback).map(_ => Ok)
     }
   }
-}

@@ -27,7 +27,6 @@ import uk.gov.hmrc.helloworldupscan.model.{UploadId, UploadedSuccessfully}
 import uk.gov.hmrc.helloworldupscan.services.UploadProgressTracker
 import uk.gov.hmrc.helloworldupscan.views
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
-import uk.gov.hmrc.helloworldupscan.controllers.routes
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -41,40 +40,37 @@ class UploadFormController @Inject()(upscanInitiateConnector: UpscanInitiateConn
                                      errorView: views.html.ErrorTemplate,
                                      submissionResultView: views.html.SubmissionResult)
                                     (implicit appConfig: AppConfig,
-                                     ec: ExecutionContext) extends FrontendController(mcc) with Logging {
+                                     ec: ExecutionContext) extends FrontendController(mcc) with Logging:
 
   val show: Action[AnyContent] = Action.async { implicit request =>
     val uploadId           = UploadId.generate
     val successRedirectUrl = appConfig.uploadRedirectTargetBase + routes.UploadFormController.showResult(uploadId).url
-    for {
+    for
       upscanInitiateResponse <- upscanInitiateConnector.initiateV1(Some(successRedirectUrl))
       _                      <- uploadProgressTracker.requestUpload(uploadId, Reference(upscanInitiateResponse.fileReference.reference))
-    } yield Ok(uploadFormView(upscanInitiateResponse))
+    yield Ok(uploadFormView(upscanInitiateResponse))
   }
 
   val showV2: Action[AnyContent] = Action.async { implicit request =>
     val uploadId           = UploadId.generate
     val successRedirectUrl = appConfig.uploadRedirectTargetBase + routes.UploadFormController.showResult(uploadId).url
     val errorRedirectUrl   = appConfig.uploadRedirectTargetBase + "/hello-world-upscan/hello-world/error"
-    for {
+    for
       upscanInitiateResponse <- upscanInitiateConnector.initiateV2(Some(successRedirectUrl), Some(errorRedirectUrl))
       _                      <- uploadProgressTracker.requestUpload(uploadId, Reference(upscanInitiateResponse.fileReference.reference))
-    } yield Ok(uploadFormView(upscanInitiateResponse))
+    yield Ok(uploadFormView(upscanInitiateResponse))
   }
 
   def showResult(uploadId: UploadId): Action[AnyContent] = Action.async { implicit request =>
-    for (uploadResult <- uploadProgressTracker.getUploadResult(uploadId)) yield {
-      uploadResult match {
+    for uploadResult <- uploadProgressTracker.getUploadResult(uploadId) yield
+      uploadResult match
         case Some(result) => Ok(uploadResultView(uploadId, result))
         case None         => BadRequest(s"Upload with id $uploadId not found")
-      }
-    }
   }
 
-  def showError(errorCode: String, errorMessage: String, errorRequestId: String, key: String): Action[AnyContent] = Action {
+  def showError(errorCode: String, errorMessage: String, errorRequestId: String, key: String): Action[AnyContent] = Action:
     implicit request =>
       Ok(errorView("Upload Error", errorMessage, s"Code: $errorCode, RequestId: $errorRequestId, FileReference: $key"))
-  }
 
   private case class SampleForm(field1: String, field2: String, uploadedFileId: UploadId)
 
@@ -83,17 +79,15 @@ class UploadFormController @Inject()(upscanInitiateConnector: UpscanInitiateConn
       "field1"         -> text,
       "field2"         -> text,
       "uploadedFileId" -> text.transform[UploadId](UploadId(_), _.value)
-    )(SampleForm.apply)(SampleForm.unapply)
+    )(SampleForm.apply)(o => Some(Tuple.fromProductTyped(o)))
   )
 
   def showSubmissionForm(uploadId: UploadId): Action[AnyContent] = Action.async { implicit request =>
     val emptyForm = sampleForm.fill(SampleForm("", "", uploadId))
-    for (uploadResult <- uploadProgressTracker.getUploadResult(uploadId)) yield {
-      uploadResult match {
+    for uploadResult <- uploadProgressTracker.getUploadResult(uploadId) yield
+      uploadResult match
         case Some(s: UploadedSuccessfully) => Ok(submissionFormView(emptyForm, s))
         case _                             => InternalServerError("Something gone wrong")
-      }
-    }
   }
 
   def submitFormWithFile(): Action[AnyContent] = Action.async { implicit request =>
@@ -113,4 +107,3 @@ class UploadFormController @Inject()(upscanInitiateConnector: UpscanInitiateConn
   def showSubmissionResult(): Action[AnyContent] = Action.async { implicit request =>
     Future.successful(Ok(submissionResultView()))
   }
-}

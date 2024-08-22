@@ -22,11 +22,11 @@ import uk.gov.hmrc.helloworldupscan.model.{Failed, UploadedSuccessfully}
 import javax.inject.Inject
 import scala.concurrent.Future
 
-class UpscanCallbackDispatcher @Inject() (sessionStorage: UploadProgressTracker) {
+class UpscanCallbackDispatcher @Inject() (sessionStorage: UploadProgressTracker):
 
-  def handleCallback(callback : CallbackBody): Future[Unit] = {
+  def handleCallback(callback : CallbackBody): Future[Unit] =
 
-    val uploadStatus = callback match {
+    val uploadStatus = callback match
       case s: ReadyCallbackBody =>
         UploadedSuccessfully(
           s.uploadDetails.fileName,
@@ -36,9 +36,6 @@ class UpscanCallbackDispatcher @Inject() (sessionStorage: UploadProgressTracker)
         )
       case _: FailedCallbackBody =>
         Failed
-    }
 
     sessionStorage.registerUploadResult(callback.reference, uploadStatus)
-  }
 
-}
