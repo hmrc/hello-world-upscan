@@ -27,7 +27,7 @@ class UserSessionRepositoryTest extends AnyWordSpec with Matchers:
   "Serialization and deserialization of UploadDetails" should:
 
     "serialize and deserialize InProgress status" in:
-      val input = UploadDetails(ObjectId.get(), UploadId.generate, Reference("ABC"), InProgress)
+      val input = UploadDetails(ObjectId.get(), UploadId.generate(), Reference("ABC"), UploadStatus.InProgress)
 
       val serialized = UserSessionRepository.mongoFormat.writes(input)
       val output = UserSessionRepository.mongoFormat.reads(serialized)
@@ -35,7 +35,7 @@ class UserSessionRepositoryTest extends AnyWordSpec with Matchers:
       output.get shouldBe input
 
     "serialize and deserialize Failed status" in:
-      val input = UploadDetails(ObjectId.get(), UploadId.generate, Reference("ABC"), Failed)
+      val input = UploadDetails(ObjectId.get(), UploadId.generate(), Reference("ABC"), UploadStatus.Failed)
 
       val serialized = UserSessionRepository.mongoFormat.writes(input)
       val output = UserSessionRepository.mongoFormat.reads(serialized)
@@ -45,9 +45,9 @@ class UserSessionRepositoryTest extends AnyWordSpec with Matchers:
     "serialize and deserialize UploadedSuccessfully status when size is unknown" in:
       val input = UploadDetails(
         ObjectId.get(),
-        UploadId.generate,
+        UploadId.generate(),
         Reference("ABC"),
-        UploadedSuccessfully("foo.txt", "text/plain", "http:localhost:8080", size = None)
+        UploadStatus.UploadedSuccessfully("foo.txt", "text/plain", "http:localhost:8080", size = None)
       )
 
       val serialized = UserSessionRepository.mongoFormat.writes(input)
@@ -58,9 +58,9 @@ class UserSessionRepositoryTest extends AnyWordSpec with Matchers:
     "serialize and deserialize UploadedSuccessfully status when size is known" in:
       val input = UploadDetails(
         ObjectId.get(),
-        UploadId.generate,
+        UploadId.generate(),
         Reference("ABC"),
-        UploadedSuccessfully("foo.txt", "text/plain", "http:localhost:8080", size = Some(123456))
+        UploadStatus.UploadedSuccessfully("foo.txt", "text/plain", "http:localhost:8080", size = Some(123456))
       )
 
       val serialized = UserSessionRepository.mongoFormat.writes(input)

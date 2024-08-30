@@ -16,13 +16,16 @@
 
 package uk.gov.hmrc.helloworldupscan.config
 
-import javax.inject.{Inject, Singleton}
 import play.api.Configuration
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
+import javax.inject.{Inject, Singleton}
+
 @Singleton
-class AppConfig @Inject()(configuration: Configuration,
-                          servicesConfig: ServicesConfig):
+class AppConfig @Inject()(
+  configuration : Configuration,
+  servicesConfig: ServicesConfig
+):
 
   lazy val initiateUrl              = servicesConfig.baseUrl("upscan-initiate") + "/upscan/initiate"
   lazy val initiateV2Url            = servicesConfig.baseUrl("upscan-initiate") + "/upscan/v2/initiate"
@@ -35,11 +38,12 @@ class AppConfig @Inject()(configuration: Configuration,
 
   lazy val reportAProblemPartialUrl = s"$contactHost/contact/problem_reports_ajax?service=$contactFormServiceIdentifier"
   lazy val reportAProblemNonJSUrl   = s"$contactHost/contact/problem_reports_nonjs?service=$contactFormServiceIdentifier"
+
   private val contactHost                  = configuration.getOptional[String](s"contact-frontend.host").getOrElse("")
   private val contactFormServiceIdentifier = "MyService"
 
   private def loadConfig(key: String) =
-    configuration.getOptional[String](key).getOrElse(throw new Exception(s"Missing configuration key: $key"))
+    configuration.getOptional[String](key).getOrElse(throw Exception(s"Missing configuration key: $key"))
 
   val welshLanguageSupportEnabled: Boolean =
     configuration.getOptional[Boolean]("features.welsh-language-support").getOrElse(false)

@@ -20,7 +20,7 @@
 
 @this(layout: Layout)
 
-@(uploadId: UploadId, status : UploadStatus)(implicit messages: Messages, request: RequestHeader)
+@(uploadId: UploadId, status: UploadStatus)(implicit messages: Messages, request: RequestHeader)
 
 @refreshHeader = {
  <meta http-equiv="refresh" content="1"/>
@@ -30,8 +30,8 @@
     pageTitle         = Some("Verifying uploaded file"),
     templateOverrides = TemplateOverrides(
                             additionalHeadBlock = status match {
-                                                    case InProgress => Some(refreshHeader)
-                                                    case _          => None
+                                                    case UploadStatus.InProgress => Some(refreshHeader)
+                                                    case _                       => None
                                                   }
                         )
 ) {
@@ -39,14 +39,14 @@
 
     <p class="govuk-body">
         @status match {
-        case InProgress => { Waiting for the file to be scanned }
-        case s : UploadedSuccessfully => { Upload of <b>@s.name</b> successful! }
-        case Failed => { File has been rejected. }
+          case UploadStatus.InProgress               => { Waiting for the file to be scanned }
+          case s : UploadStatus.UploadedSuccessfully => { Upload of <b>@s.name</b> successful! }
+          case UploadStatus.Failed                   => { File has been rejected. }
         }
     </p>
 
     @status match {
-        case s : UploadedSuccessfully => {
+        case s : UploadStatus.UploadedSuccessfully => {
             <p class="govuk-body">
                 <a href="@uk.gov.hmrc.helloworldupscan.controllers.routes.UploadFormController.showSubmissionForm(uploadId)">
                     <button class="govuk-button govuk-button--secondary">Next</button>

@@ -24,14 +24,19 @@ import uk.gov.hmrc.helloworldupscan.repository.UserSessionRepository
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class MongoBackedUploadProgressTracker @Inject()(repository : UserSessionRepository)(implicit ec : ExecutionContext) extends UploadProgressTracker:
+class MongoBackedUploadProgressTracker @Inject()(
+  repository: UserSessionRepository
+)(using
+  ExecutionContext
+) extends UploadProgressTracker:
 
-  override def requestUpload(uploadId : UploadId, fileReference : Reference): Future[Unit] =
-    repository.insert(UploadDetails(ObjectId.get(), uploadId, fileReference, InProgress))
+  override def requestUpload(uploadId: UploadId, fileReference: Reference): Future[Unit] =
+    repository.insert(UploadDetails(ObjectId.get(), uploadId, fileReference, UploadStatus.InProgress))
 
   override def registerUploadResult(fileReference: Reference, uploadStatus: UploadStatus): Future[Unit] =
     repository.updateStatus(fileReference, uploadStatus).map(_ => ())
 
   override def getUploadResult(id: UploadId): Future[Option[UploadStatus]] =
-    for result <- repository.findByUploadId(id) yield
-      result.map(_.status)
+    repository
+      .findByUploadId(id)
+      .map(_.map(_.status))

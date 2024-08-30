@@ -46,24 +46,23 @@ class CallbackBodyTest extends AnyWordSpec with Matchers:
           |
         """.stripMargin
 
-      CallbackBody.reads.reads(Json.parse(body)) shouldBe
+      Json.parse(body).validate[CallbackBody] shouldBe
         JsSuccess(
-        ReadyCallbackBody(
-          reference = Reference("11370e18-6e24-453e-b45a-76d3e32ea33d"),
-          downloadUrl = new URL("https://bucketName.s3.eu-west-2.amazonaws.com?1235676"),
-          uploadDetails = UploadDetails(
-            uploadTimestamp = Instant.parse("2018-04-24T09:30:00Z"),
-            checksum = "396f101dd52e8b2ace0dcf5ed09b1d1f030e608938510ce46e7a5c7a4e775100",
-            fileMimeType = "application/pdf",
-            fileName = "test.pdf",
-            size = 45678L
+          ReadyCallbackBody(
+            reference     = Reference("11370e18-6e24-453e-b45a-76d3e32ea33d"),
+            downloadUrl   = URL("https://bucketName.s3.eu-west-2.amazonaws.com?1235676"),
+            uploadDetails = UploadDetails(
+              uploadTimestamp = Instant.parse("2018-04-24T09:30:00Z"),
+              checksum        = "396f101dd52e8b2ace0dcf5ed09b1d1f030e608938510ce46e7a5c7a4e775100",
+              fileMimeType    = "application/pdf",
+              fileName        = "test.pdf",
+              size            = 45678L
+            )
           )
-        )
         )
 
 
     "should be able to deserialize failed body" in:
-
       val body =
         """
           |{
@@ -76,14 +75,13 @@ class CallbackBodyTest extends AnyWordSpec with Matchers:
           |}
         """.stripMargin
 
-      CallbackBody.reads.reads(Json.parse(body)) shouldBe
-      JsSuccess(
-        FailedCallbackBody(
-          reference = Reference("11370e18-6e24-453e-b45a-76d3e32ea33d"),
-          failureDetails = ErrorDetails(
-            failureReason = "QUARANTINE",
-            message = "e.g. This file has a virus"
+      Json.parse(body).validate[CallbackBody] shouldBe
+        JsSuccess(
+          FailedCallbackBody(
+            reference      = Reference("11370e18-6e24-453e-b45a-76d3e32ea33d"),
+            failureDetails = ErrorDetails(
+              failureReason = "QUARANTINE",
+              message       = "e.g. This file has a virus"
+            )
           )
-        ))
-
-
+        )

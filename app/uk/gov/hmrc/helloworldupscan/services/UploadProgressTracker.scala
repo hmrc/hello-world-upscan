@@ -24,12 +24,10 @@ import scala.concurrent.Future
 
 
 @ImplementedBy(classOf[MongoBackedUploadProgressTracker])
-trait UploadProgressTracker {
+trait UploadProgressTracker:
 
-  def requestUpload(uploadId : UploadId, fileReference : Reference) : Future[Unit]
+  def requestUpload(uploadId: UploadId, fileReference: Reference): Future[Unit]
 
-  def registerUploadResult(reference : Reference, uploadStatus : UploadStatus): Future[Unit]
+  def registerUploadResult(reference: Reference, uploadStatus: UploadStatus): Future[Unit]
 
-  def getUploadResult(id : UploadId): Future[Option[UploadStatus]]
-
-}
+  def getUploadResult(id: UploadId): Future[Option[UploadStatus]]

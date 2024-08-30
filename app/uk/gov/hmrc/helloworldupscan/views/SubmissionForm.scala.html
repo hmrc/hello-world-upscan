@@ -20,7 +20,7 @@
 
 @this(layout: Layout)
 
-@(form: Form[_], uploadedFile: UploadedSuccessfully)(implicit request: RequestHeader, messages: Messages)
+@(form: Form[_], uploadedFile: UploadStatus.UploadedSuccessfully)(implicit request: RequestHeader, messages: Messages)
 
 @layout(pageTitle = Some("Hello from hello-world-upscan")) {
     <h1 class="govuk-heading-l">Please fill in additional information</h1>
