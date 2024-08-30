@@ -36,57 +36,62 @@ import scala.concurrent.{ExecutionContext, Future}
 object UserSessionRepository:
   val status = "status"
 
-  private implicit val uploadStatusFormat: Format[UploadStatus] =
-    implicit val uploadedSuccessfullyFormat: OFormat[UploadedSuccessfully] = Json.format[UploadedSuccessfully]
-    val read: Reads[UploadStatus] = new Reads[UploadStatus]:
-      override def reads(json: JsValue): JsResult[UploadStatus] =
+  private given Format[UploadStatus] =
+    given Format[UploadStatus.UploadedSuccessfully] =
+      Json.format[UploadStatus.UploadedSuccessfully]
+    val read: Reads[UploadStatus] =
+      (json: JsValue) =>
         val jsObject = json.asInstanceOf[JsObject]
         jsObject.value.get("_type") match
-          case Some(JsString("InProgress")) => JsSuccess(InProgress)
-          case Some(JsString("Failed")) => JsSuccess(Failed)
-          case Some(JsString("UploadedSuccessfully")) => Json.fromJson[UploadedSuccessfully](jsObject)(uploadedSuccessfullyFormat)
-          case Some(value) => JsError(s"Unexpected value of _type: $value")
-          case None => JsError("Missing _type field")
+          case Some(JsString("InProgress"))           => JsSuccess(UploadStatus.InProgress)
+          case Some(JsString("Failed"))               => JsSuccess(UploadStatus.Failed)
+          case Some(JsString("UploadedSuccessfully")) => Json.fromJson[UploadStatus.UploadedSuccessfully](jsObject)
+          case Some(value)                            => JsError(s"Unexpected value of _type: $value")
+          case None                                   => JsError("Missing _type field")
 
-    val write: Writes[UploadStatus] = new Writes[UploadStatus]:
-      override def writes(p: UploadStatus): JsValue =
+    val write: Writes[UploadStatus] =
+      (p: UploadStatus) =>
         p match
-          case InProgress => JsObject(Map("_type" -> JsString("InProgress")))
-          case Failed => JsObject(Map("_type" -> JsString("Failed")))
-          case s: UploadedSuccessfully => Json.toJson(s)(uploadedSuccessfullyFormat).as[JsObject] + ("_type" -> JsString("UploadedSuccessfully"))
+          case UploadStatus.InProgress              => JsObject(Map("_type" -> JsString("InProgress")))
+          case UploadStatus.Failed                  => JsObject(Map("_type" -> JsString("Failed")))
+          case s: UploadStatus.UploadedSuccessfully => Json.toJson(s).as[JsObject]
+                                                         + ("_type" -> JsString("UploadedSuccessfully"))
 
     Format(read, write)
 
-  private implicit val idFormat: OFormat[UploadId] =
+  private given Format[UploadId] =
     Format.at[String](__ \ "value")
       .inmap[UploadId](UploadId.apply, _.value)
 
-  private implicit val referenceFormat: OFormat[Reference] =
+  private given Format[Reference] =
     Format.at[String](__ \ "value")
       .inmap[Reference](Reference.apply, _.value)
 
-  private[repository] val mongoFormat: OFormat[UploadDetails] =
-    implicit val objectIdFormats: Format[ObjectId] = MongoFormats.objectIdFormat
-    ((__ \ "_id").format[ObjectId]
-      ~ (__ \ "uploadId").format[UploadId]
-      ~ (__ \ "reference").format[Reference]
-      ~ (__ \ "status").format[UploadStatus]
-      ) (UploadDetails.apply, Tuple.fromProductTyped _)
+  private[repository] val mongoFormat: Format[UploadDetails] =
+    given Format[ObjectId] = MongoFormats.objectIdFormat
+    ( (__ \ "_id"      ).format[ObjectId]
+    ~ (__ \ "uploadId" ).format[UploadId]
+    ~ (__ \ "reference").format[Reference]
+    ~ (__ \ "status"   ).format[UploadStatus]
+    )(UploadDetails.apply, Tuple.fromProductTyped _)
 
 @Singleton
-class UserSessionRepository @Inject()(mongoComponent: MongoComponent)(implicit ec: ExecutionContext)
-  extends PlayMongoRepository[UploadDetails](
-    collectionName = "simpleTestRepository",
-    mongoComponent = mongoComponent,
-    domainFormat = UserSessionRepository.mongoFormat,
-    indexes = Seq(
-      IndexModel(Indexes.ascending("uploadId"), IndexOptions().unique(true)),
-      IndexModel(Indexes.ascending("reference"), IndexOptions().unique(true))
-    ),
-    replaceIndexes = true
-  ):
+class UserSessionRepository @Inject()(
+  mongoComponent: MongoComponent
+)(using
+  ExecutionContext
+) extends PlayMongoRepository[UploadDetails](
+  collectionName = "simpleTestRepository",
+  mongoComponent = mongoComponent,
+  domainFormat   = UserSessionRepository.mongoFormat,
+  indexes        = Seq(
+                     IndexModel(Indexes.ascending("uploadId"), IndexOptions().unique(true)),
+                     IndexModel(Indexes.ascending("reference"), IndexOptions().unique(true))
+                   ),
+  replaceIndexes = true
+):
 
-  import UserSessionRepository._
+  import UserSessionRepository.{given, _}
 
   override lazy val requiresTtlIndex: Boolean = false // example repo, never deployed to prod
 
@@ -101,8 +106,9 @@ class UserSessionRepository @Inject()(mongoComponent: MongoComponent)(implicit e
   def updateStatus(reference: Reference, newStatus: UploadStatus): Future[UploadStatus] =
     collection
       .findOneAndUpdate(
-        filter = equal("reference", Codecs.toBson(reference)),
-        update = set("status", Codecs.toBson(newStatus)),
-        options = FindOneAndUpdateOptions().upsert(true))
+        filter  = equal("reference", Codecs.toBson(reference)),
+        update  = set("status", Codecs.toBson(newStatus)),
+        options = FindOneAndUpdateOptions().upsert(true)
+      )
       .toFuture()
       .map(_.status)

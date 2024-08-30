@@ -16,9 +16,12 @@
 
 package uk.gov.hmrc.upscan.services
 
-case class UpscanFileReference(reference: String)
+case class UpscanFileReference(
+  reference: String
+)
 
 case class UpscanInitiateResponse(
   fileReference: UpscanFileReference,
-  postTarget: String,
-  formFields: Map[String, String])
+  postTarget   : String,
+  formFields   : Map[String, String]
+)

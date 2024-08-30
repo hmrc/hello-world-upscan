@@ -16,92 +16,99 @@
 
 package uk.gov.hmrc.helloworldupscan.connectors
 
-import javax.inject.Inject
-import play.api.libs.json.{Json, OFormat, Reads, Writes}
+import play.api.libs.json.{Json, Format, Reads, Writes}
+import play.api.libs.ws.writeableOf_JsValue
 import play.mvc.Http.HeaderNames
 import uk.gov.hmrc.helloworldupscan.config.AppConfig
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.upscan.services.{UpscanFileReference, UpscanInitiateResponse}
-import PreparedUpload.*
 import uk.gov.hmrc.http.HttpReads.Implicits.*
 import uk.gov.hmrc.http.client.HttpClientV2
-import play.api.libs.ws.writeableOf_JsValue
 
-
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 sealed trait UpscanInitiateRequest
 
 // TODO expectedContentType is also an optional value
 case class UpscanInitiateRequestV1(
-  callbackUrl: String,
+  callbackUrl    : String,
   successRedirect: Option[String] = None,
   minimumFileSize: Option[Int]    = None,
-  maximumFileSize: Option[Int]    = Some(512))
-    extends UpscanInitiateRequest
+  maximumFileSize: Option[Int]    = Some(512)
+) extends UpscanInitiateRequest
 
 // TODO expectedContentType is also an optional value
 case class UpscanInitiateRequestV2(
-  callbackUrl: String,
+  callbackUrl    : String,
   successRedirect: Option[String] = None,
-  errorRedirect: Option[String]   = None,
+  errorRedirect  : Option[String] = None,
   minimumFileSize: Option[Int]    = None,
-  maximumFileSize: Option[Int]    = Some(512))
-    extends UpscanInitiateRequest
+  maximumFileSize: Option[Int]    = Some(512)
+) extends UpscanInitiateRequest
 
-case class UploadForm(href: String, fields: Map[String, String])
+case class UploadForm(
+  href  : String,
+  fields: Map[String, String]
+)
 
 case class Reference(value: String) extends AnyVal
 
 object Reference:
-  implicit val referenceReader: Reads[Reference] = Reads.StringReads.map(Reference(_))
+  given Reads[Reference] = Reads.StringReads.map(Reference(_))
 
-case class PreparedUpload(reference: Reference, uploadRequest: UploadForm)
+case class PreparedUpload(
+  reference   : Reference,
+  uploadRequest: UploadForm
+)
 
 object UpscanInitiateRequestV1:
-  implicit val format: OFormat[UpscanInitiateRequestV1] = Json.format[UpscanInitiateRequestV1]
+  given Format[UpscanInitiateRequestV1] = Json.format[UpscanInitiateRequestV1]
 
 object UpscanInitiateRequestV2:
-  implicit val format: OFormat[UpscanInitiateRequestV2] = Json.format[UpscanInitiateRequestV2]
+  given Format[UpscanInitiateRequestV2] = Json.format[UpscanInitiateRequestV2]
 
 object PreparedUpload:
+  given Reads[UploadForm]     = Json.reads[UploadForm]
+  given Reads[PreparedUpload] = Json.reads[PreparedUpload]
 
-  implicit val uploadFormFormat: Reads[UploadForm] = Json.reads[UploadForm]
-
-  implicit val format: Reads[PreparedUpload] = Json.reads[PreparedUpload]
-
-class UpscanInitiateConnector @Inject()(httpClient: HttpClientV2, appConfig: AppConfig)(implicit ec: ExecutionContext):
+class UpscanInitiateConnector @Inject()(
+  httpClient: HttpClientV2,
+  appConfig : AppConfig
+)(using ExecutionContext):
 
   private val headers = Map(
     HeaderNames.CONTENT_TYPE -> "application/json"
   )
 
-  def initiateV1(redirectOnSuccess: Option[String])(implicit hc: HeaderCarrier): Future[UpscanInitiateResponse] =
+  def initiateV1(redirectOnSuccess: Option[String])(using HeaderCarrier): Future[UpscanInitiateResponse] =
     val request = UpscanInitiateRequestV1(
-      callbackUrl = appConfig.callbackEndpointTarget,
+      callbackUrl     = appConfig.callbackEndpointTarget,
       successRedirect = redirectOnSuccess
     )
     initiate(appConfig.initiateUrl, request)
 
-  def initiateV2(redirectOnSuccess: Option[String], redirectOnError: Option[String])
-                (implicit hc: HeaderCarrier): Future[UpscanInitiateResponse] =
+  def initiateV2(
+    redirectOnSuccess: Option[String],
+    redirectOnError  : Option[String]
+  )(using HeaderCarrier): Future[UpscanInitiateResponse] =
     val request = UpscanInitiateRequestV2(
-      callbackUrl = appConfig.callbackEndpointTarget,
+      callbackUrl     = appConfig.callbackEndpointTarget,
       successRedirect = redirectOnSuccess,
-      errorRedirect = redirectOnError
+      errorRedirect   = redirectOnError
     )
     initiate(appConfig.initiateV2Url, request)
 
-  private def initiate[T](url: String, request: T)(
-    implicit hc: HeaderCarrier,
-    wts: Writes[T]): Future[UpscanInitiateResponse] =
+  private def initiate[T](
+    url    : String,
+    request: T
+  )(using HeaderCarrier, Writes[T]): Future[UpscanInitiateResponse] =
     for
-      response <- httpClient.post(url"$url")
-                    .withBody(Json.toJson(request))
-                    .setHeader(headers.toSeq: _*)
-                    .execute[PreparedUpload]
-      fileReference = UpscanFileReference(response.reference.value)
-      postTarget    = response.uploadRequest.href
-      formFields    = response.uploadRequest.fields
+      response      <- httpClient.post(url"$url")
+                         .withBody(Json.toJson(request))
+                         .setHeader(headers.toSeq: _*)
+                         .execute[PreparedUpload]
+      fileReference =  UpscanFileReference(response.reference.value)
+      postTarget    =  response.uploadRequest.href
+      formFields    =  response.uploadRequest.fields
     yield UpscanInitiateResponse(fileReference, postTarget, formFields)
-

@@ -26,25 +26,25 @@ import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class MongoBackedUploadProgressTrackerSpec extends AnyWordSpec
-  with Matchers
-  with DefaultPlayMongoRepositorySupport[UploadDetails]
-  with IntegrationPatience {
+class MongoBackedUploadProgressTrackerSpec
+  extends AnyWordSpec
+     with Matchers
+     with DefaultPlayMongoRepositorySupport[UploadDetails]
+     with IntegrationPatience:
 
-  override val repository: UserSessionRepository = new UserSessionRepository(mongoComponent)
+  override val repository: UserSessionRepository = UserSessionRepository(mongoComponent)
 
-  val t = new MongoBackedUploadProgressTracker(repository)
+  val progressTracker = MongoBackedUploadProgressTracker(repository)
 
   "MongoBackedUploadProgressTracker" should:
     "coordinate workflow" in:
       val reference = Reference("reference")
       val id = UploadId("upload-id")
-      val expectedStatus = UploadedSuccessfully("name", "mimeType", "downloadUrl", size = Some(123))
+      val expectedStatus = UploadStatus.UploadedSuccessfully("name", "mimeType", "downloadUrl", size = Some(123))
 
-      t.requestUpload(id, reference).futureValue
-      t.registerUploadResult(reference, expectedStatus).futureValue
+      progressTracker.requestUpload(id, reference).futureValue
+      progressTracker.registerUploadResult(reference, expectedStatus).futureValue
 
-      val result = t.getUploadResult(id).futureValue
+      val result = progressTracker.getUploadResult(id).futureValue
 
       result shouldBe Some(expectedStatus)
-}
