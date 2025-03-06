@@ -90,8 +90,7 @@ class UserSessionRepository @Inject()(
                    ),
   replaceIndexes = true
 ):
-
-  import UserSessionRepository.{given, _}
+  import UserSessionRepository.given
 
   override lazy val requiresTtlIndex: Boolean = false // example repo, never deployed to prod
 

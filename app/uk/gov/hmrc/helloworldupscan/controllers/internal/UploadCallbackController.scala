@@ -84,8 +84,8 @@ class UploadCallbackController @Inject()(
 )(using ExecutionContext) extends FrontendController(mcc) with Logging:
 
   val callback: Action[JsValue] =
-    Action.async(parse.json) { implicit request =>
+    Action.async(parse.json): request =>
+      given Request[JsValue] = request
       logger.info(s"Received callback notification [${Json.stringify(request.body)}]")
       withJsonBody[CallbackBody]: feedback =>
         upscanCallbackDispatcher.handleCallback(feedback).map(_ => Ok)
-    }
