@@ -47,17 +47,18 @@ class UploadFormController @Inject()(
      with Logging:
 
   val show: Action[AnyContent] =
-    Action.async { implicit request =>
+    Action.async: request =>
+      given MessagesRequestHeader = request
       val uploadId           = UploadId.generate()
       val successRedirectUrl = appConfig.uploadRedirectTargetBase + routes.UploadFormController.showResult(uploadId).url
       for
         upscanInitiateResponse <- upscanInitiateConnector.initiateV1(Some(successRedirectUrl))
         _                      <- uploadProgressTracker.requestUpload(uploadId, Reference(upscanInitiateResponse.fileReference.reference))
       yield Ok(uploadFormView(upscanInitiateResponse))
-    }
 
   val showV2: Action[AnyContent] =
-    Action.async { implicit request =>
+    Action.async: request =>
+      given MessagesRequestHeader = request
       val uploadId           = UploadId.generate()
       val successRedirectUrl = appConfig.uploadRedirectTargetBase + routes.UploadFormController.showResult(uploadId).url
       val errorRedirectUrl   = appConfig.uploadRedirectTargetBase + "/hello-world-upscan/hello-world/error"
@@ -65,24 +66,28 @@ class UploadFormController @Inject()(
         upscanInitiateResponse <- upscanInitiateConnector.initiateV2(Some(successRedirectUrl), Some(errorRedirectUrl))
         _                      <- uploadProgressTracker.requestUpload(uploadId, Reference(upscanInitiateResponse.fileReference.reference))
       yield Ok(uploadFormView(upscanInitiateResponse))
-    }
 
   def showResult(uploadId: UploadId): Action[AnyContent] =
-    Action.async { implicit request =>
+    Action.async: request =>
+      given MessagesRequestHeader = request
       for uploadResult <- uploadProgressTracker.getUploadResult(uploadId) yield
         uploadResult match
           case Some(result) => Ok(uploadResultView(uploadId, result))
           case None         => BadRequest(s"Upload with id $uploadId not found")
-    }
 
   def showError(
     errorCode     : String,
     errorMessage  : String,
     errorRequestId: String,
     key           : String
-  ): Action[AnyContent] = Action:
-    implicit request =>
-      Ok(errorView("Upload Error", errorMessage, s"Code: $errorCode, RequestId: $errorRequestId, FileReference: $key"))
+  ): Action[AnyContent] =
+    Action: request =>
+      given MessagesRequestHeader = request
+      Ok(errorView(
+        "Upload Error",
+        errorMessage,
+        s"Code: $errorCode, RequestId: $errorRequestId, FileReference: $key"
+      ))
 
   private case class SampleForm(
     field1        : String,
@@ -100,16 +105,17 @@ class UploadFormController @Inject()(
     )
 
   def showSubmissionForm(uploadId: UploadId): Action[AnyContent] =
-    Action.async { implicit request =>
+    Action.async: request =>
+      given MessagesRequest[AnyContent] = request
       val emptyForm = sampleForm.fill(SampleForm("", "", uploadId))
-      for uploadResult <- uploadProgressTracker.getUploadResult(uploadId) yield
-        uploadResult match
+      uploadProgressTracker.getUploadResult(uploadId)
+        .map:
           case Some(s: UploadStatus.UploadedSuccessfully) => Ok(submissionFormView(emptyForm, s))
           case _                                          => InternalServerError("Something gone wrong")
-    }
 
   def submitFormWithFile(): Action[AnyContent] =
-    Action.async { implicit request =>
+    Action.async: request =>
+      given Request[AnyContent] = request
       sampleForm
         .bindFromRequest()
         .fold(
@@ -121,9 +127,8 @@ class UploadFormController @Inject()(
             Future.successful(Redirect(routes.UploadFormController.showSubmissionResult()))
           }
         )
-    }
 
   def showSubmissionResult(): Action[AnyContent] =
-    Action.async { implicit request =>
+    Action.async: request =>
+      given MessagesRequestHeader = request
       Future.successful(Ok(submissionResultView()))
-    }
