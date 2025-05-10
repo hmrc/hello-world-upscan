@@ -50,12 +50,10 @@ object UserSessionRepository:
           case None                                   => JsError("Missing _type field")
 
     val write: Writes[UploadStatus] =
-      (p: UploadStatus) =>
-        p match
-          case UploadStatus.InProgress              => JsObject(Map("_type" -> JsString("InProgress")))
-          case UploadStatus.Failed                  => JsObject(Map("_type" -> JsString("Failed")))
-          case s: UploadStatus.UploadedSuccessfully => Json.toJson(s).as[JsObject]
-                                                         + ("_type" -> JsString("UploadedSuccessfully"))
+      case UploadStatus.InProgress              => JsObject(Map("_type" -> JsString("InProgress")))
+      case UploadStatus.Failed                  => JsObject(Map("_type" -> JsString("Failed")))
+      case s: UploadStatus.UploadedSuccessfully => Json.toJson(s).as[JsObject]
+                                                   + ("_type" -> JsString("UploadedSuccessfully"))
 
     Format(read, write)
 

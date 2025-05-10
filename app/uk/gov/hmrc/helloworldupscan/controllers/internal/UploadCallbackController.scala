@@ -76,7 +76,6 @@ case class ErrorDetails(
   message      : String
 )
 
-
 @Singleton
 class UploadCallbackController @Inject()(
   upscanCallbackDispatcher: UpscanCallbackDispatcher,
