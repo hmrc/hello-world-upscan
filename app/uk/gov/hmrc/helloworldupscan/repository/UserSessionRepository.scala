@@ -22,14 +22,15 @@ import org.mongodb.scala.model.Filters.equal
 import org.mongodb.scala.model.Updates.set
 import org.mongodb.scala.model.{FindOneAndUpdateOptions, IndexModel, IndexOptions, Indexes}
 import org.mongodb.scala.SingleObservableFuture
-import play.api.libs.functional.syntax._
-import play.api.libs.json._
+import play.api.libs.functional.syntax.*
+import play.api.libs.json.*
 import uk.gov.hmrc.helloworldupscan.connectors.Reference
-import uk.gov.hmrc.helloworldupscan.model._
+import uk.gov.hmrc.helloworldupscan.model.*
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.formats.MongoFormats
 import uk.gov.hmrc.mongo.play.json.{Codecs, PlayMongoRepository}
 
+import java.net.{URI, URL}
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -37,6 +38,7 @@ object UserSessionRepository:
   val status = "status"
 
   private given Format[UploadStatus] =
+    given Format[URL] = summon[Format[String]].inmap(new URI(_).toURL, _.toString)
     given Format[UploadStatus.UploadedSuccessfully] =
       Json.format[UploadStatus.UploadedSuccessfully]
     val read: Reads[UploadStatus] =

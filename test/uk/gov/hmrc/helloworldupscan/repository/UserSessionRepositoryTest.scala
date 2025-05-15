@@ -20,7 +20,8 @@ import org.bson.types.ObjectId
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import uk.gov.hmrc.helloworldupscan.connectors.Reference
-import uk.gov.hmrc.helloworldupscan.model._
+import uk.gov.hmrc.helloworldupscan.model.*
+import uk.gov.hmrc.http.StringContextOps
 
 class UserSessionRepositoryTest extends AnyWordSpec with Matchers:
 
@@ -47,7 +48,7 @@ class UserSessionRepositoryTest extends AnyWordSpec with Matchers:
         ObjectId.get(),
         UploadId.generate(),
         Reference("ABC"),
-        UploadStatus.UploadedSuccessfully("foo.txt", "text/plain", "http:localhost:8080", size = None)
+        UploadStatus.UploadedSuccessfully("foo.txt", "text/plain", url"http:localhost:8080", size = None)
       )
 
       val serialized = UserSessionRepository.mongoFormat.writes(input)
@@ -60,7 +61,7 @@ class UserSessionRepositoryTest extends AnyWordSpec with Matchers:
         ObjectId.get(),
         UploadId.generate(),
         Reference("ABC"),
-        UploadStatus.UploadedSuccessfully("foo.txt", "text/plain", "http:localhost:8080", size = Some(123456))
+        UploadStatus.UploadedSuccessfully("foo.txt", "text/plain", url"http:localhost:8080", size = Some(123456))
       )
 
       val serialized = UserSessionRepository.mongoFormat.writes(input)

@@ -25,7 +25,7 @@ import org.scalatestplus.mockito.MockitoSugar.mock
 import uk.gov.hmrc.helloworldupscan.connectors.Reference
 import uk.gov.hmrc.helloworldupscan.model.*
 import uk.gov.hmrc.helloworldupscan.repository.UserSessionRepository
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
 import uk.gov.hmrc.objectstore.client.{Md5Hash, ObjectSummaryWithMd5, Path, RetentionPeriod}
 import uk.gov.hmrc.objectstore.client.play.PlayObjectStoreClient
@@ -52,7 +52,7 @@ class UploadProgressTrackerSpec
     "coordinate workflow" in:
       val reference = Reference("reference")
       val id = UploadId("upload-id")
-      val downloadUrl = "https://www.some-site.com/a-file.txt"
+      val downloadUrl = url"https://www.some-site.com/a-file.txt"
       val expectedStatus = UploadStatus.UploadedSuccessfully("name", "mimeType", downloadUrl, size = Some(123))
 
       when(

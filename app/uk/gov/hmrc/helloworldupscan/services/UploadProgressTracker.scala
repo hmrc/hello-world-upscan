@@ -52,7 +52,7 @@ class UploadProgressTracker @Inject()(
       .map(_.map(_.status))
 
   private def transferToObjectStore(fileReference: Reference, uploadStatus: UploadStatus)
-                                   (using hc: HeaderCarrier): Future[Unit] =
+                                   (using HeaderCarrier): Future[Unit] =
     uploadStatus match
       case details: UploadStatus.UploadedSuccessfully =>
         val fileLocation = Path.File(s"${fileReference.value}/${details.name}")

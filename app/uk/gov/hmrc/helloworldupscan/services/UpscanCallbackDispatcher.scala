@@ -26,14 +26,14 @@ import scala.concurrent.Future
 class UpscanCallbackDispatcher @Inject() (sessionStorage: UploadProgressTracker):
 
   def handleCallback(callback: CallbackBody)
-                    (using hc: HeaderCarrier): Future[Unit] =
+                    (using HeaderCarrier): Future[Unit] =
     val uploadStatus =
       callback match
         case s: ReadyCallbackBody =>
           UploadStatus.UploadedSuccessfully(
             name        = s.uploadDetails.fileName,
             mimeType    = s.uploadDetails.fileMimeType,
-            downloadUrl = s.downloadUrl.toString,
+            downloadUrl = s.downloadUrl,
             size        = Some(s.uploadDetails.size)
           )
         case _: FailedCallbackBody =>
