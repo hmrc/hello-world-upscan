@@ -16,18 +16,51 @@
 
 package uk.gov.hmrc.helloworldupscan.services
 
-import com.google.inject.ImplementedBy
+import org.bson.types.ObjectId
 import uk.gov.hmrc.helloworldupscan.connectors.Reference
-import uk.gov.hmrc.helloworldupscan.model.{UploadId, UploadStatus}
+import uk.gov.hmrc.helloworldupscan.model.*
+import uk.gov.hmrc.helloworldupscan.repository.UserSessionRepository
+import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
+import uk.gov.hmrc.objectstore.client.{Path, RetentionPeriod}
+import uk.gov.hmrc.objectstore.client.play.PlayObjectStoreClient
 
-import scala.concurrent.Future
+import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
 
+@Singleton
+class UploadProgressTracker @Inject()(
+  repository: UserSessionRepository,
+  osClient  : PlayObjectStoreClient
+)(using
+  ExecutionContext
+):
 
-@ImplementedBy(classOf[MongoBackedUploadProgressTracker])
-trait UploadProgressTracker:
+  def requestUpload(uploadId: UploadId, fileReference: Reference): Future[Unit] =
+    repository.insert(UploadDetails(ObjectId.get(), uploadId, fileReference, UploadStatus.InProgress))
 
-  def requestUpload(uploadId: UploadId, fileReference: Reference): Future[Unit]
+  def registerUploadResult(fileReference: Reference, uploadStatus: UploadStatus)
+                          (using hc: HeaderCarrier): Future[Unit] =
+    for
+      _ <- repository.updateStatus(fileReference, uploadStatus)
+      _ <- transferToObjectStore(fileReference, uploadStatus)
+    yield
+      ()
 
-  def registerUploadResult(reference: Reference, uploadStatus: UploadStatus): Future[Unit]
+  def getUploadResult(id: UploadId): Future[Option[UploadStatus]] =
+    repository
+      .findByUploadId(id)
+      .map(_.map(_.status))
 
-  def getUploadResult(id: UploadId): Future[Option[UploadStatus]]
+  private def transferToObjectStore(fileReference: Reference, uploadStatus: UploadStatus)
+                                   (using HeaderCarrier): Future[Unit] =
+    uploadStatus match
+      case details: UploadStatus.UploadedSuccessfully =>
+        val fileLocation = Path.File(s"${fileReference.value}/${details.name}")
+        osClient.uploadFromUrl(
+            from = url"${details.downloadUrl}",
+            to = fileLocation,
+            retentionPeriod = RetentionPeriod.OneDay,
+            contentType = Some(details.mimeType)
+          )
+          .map(_ => ())
+      case _ => Future.unit

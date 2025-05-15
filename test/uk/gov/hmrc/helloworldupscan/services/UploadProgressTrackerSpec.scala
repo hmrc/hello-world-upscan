@@ -16,17 +16,26 @@
 
 package uk.gov.hmrc.helloworldupscan.services
 
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.when
 import org.scalatest.concurrent.IntegrationPatience
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatestplus.mockito.MockitoSugar.mock
 import uk.gov.hmrc.helloworldupscan.connectors.Reference
-import uk.gov.hmrc.helloworldupscan.model._
+import uk.gov.hmrc.helloworldupscan.model.*
 import uk.gov.hmrc.helloworldupscan.repository.UserSessionRepository
+import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
+import uk.gov.hmrc.objectstore.client.{Md5Hash, ObjectSummaryWithMd5, Path, RetentionPeriod}
+import uk.gov.hmrc.objectstore.client.play.PlayObjectStoreClient
 
+import java.net.URL
+import java.time.Instant
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
-class MongoBackedUploadProgressTrackerSpec
+class UploadProgressTrackerSpec
   extends AnyWordSpec
      with Matchers
      with DefaultPlayMongoRepositorySupport[UploadDetails]
@@ -34,13 +43,37 @@ class MongoBackedUploadProgressTrackerSpec
 
   override val repository: UserSessionRepository = UserSessionRepository(mongoComponent)
 
-  val progressTracker = MongoBackedUploadProgressTracker(repository)
+  given HeaderCarrier = mock[HeaderCarrier]
 
-  "MongoBackedUploadProgressTracker" should:
+  val objectStoreClient = mock[PlayObjectStoreClient]
+  val progressTracker = UploadProgressTracker(repository, objectStoreClient)
+
+  "UploadProgressTracker" should:
     "coordinate workflow" in:
       val reference = Reference("reference")
       val id = UploadId("upload-id")
-      val expectedStatus = UploadStatus.UploadedSuccessfully("name", "mimeType", "downloadUrl", size = Some(123))
+      val downloadUrl = url"https://www.some-site.com/a-file.txt"
+      val expectedStatus = UploadStatus.UploadedSuccessfully("name", "mimeType", downloadUrl, size = Some(123))
+
+      when(
+        objectStoreClient.uploadFromUrl(
+          from            = any[URL],
+          to              = any[Path.File],
+          retentionPeriod = any[RetentionPeriod],
+          contentType     = any[Option[String]],
+          contentMd5      = any[Option[Md5Hash]],
+          owner           = any[String]
+        )(using any[HeaderCarrier])
+      ).thenReturn(
+        Future.successful(
+          ObjectSummaryWithMd5(
+            location = Path.File("/some/file.txt"),
+            contentLength = 100,
+            contentMd5 = Md5Hash("md5hash"),
+            lastModified = Instant.now()
+          )
+        )
+      )
 
       progressTracker.requestUpload(id, reference).futureValue
       progressTracker.registerUploadResult(reference, expectedStatus).futureValue

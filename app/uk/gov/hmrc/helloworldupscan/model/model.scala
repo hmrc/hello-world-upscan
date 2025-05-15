@@ -20,6 +20,7 @@ import org.bson.types.ObjectId
 import play.api.mvc.QueryStringBindable
 import uk.gov.hmrc.helloworldupscan.connectors.Reference
 
+import java.net.URL
 import java.util.UUID
 
 sealed trait UploadStatus
@@ -29,7 +30,7 @@ object UploadStatus:
   case class UploadedSuccessfully(
     name       : String,
     mimeType   : String,
-    downloadUrl: String,
+    downloadUrl: URL,
     size       : Option[Long]
   ) extends UploadStatus
 

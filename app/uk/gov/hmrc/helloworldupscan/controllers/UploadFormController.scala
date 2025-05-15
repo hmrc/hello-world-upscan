@@ -20,7 +20,7 @@ import javax.inject.{Inject, Singleton}
 import play.api.Logging
 import play.api.data.Form
 import play.api.data.Forms.{mapping, text}
-import play.api.mvc._
+import play.api.mvc.*
 import uk.gov.hmrc.helloworldupscan.config.AppConfig
 import uk.gov.hmrc.helloworldupscan.connectors.{Reference, UpscanInitiateConnector}
 import uk.gov.hmrc.helloworldupscan.model.{UploadId, UploadStatus}
@@ -51,19 +51,9 @@ class UploadFormController @Inject()(
       given MessagesRequestHeader = request
       val uploadId           = UploadId.generate()
       val successRedirectUrl = appConfig.uploadRedirectTargetBase + routes.UploadFormController.showResult(uploadId).url
-      for
-        upscanInitiateResponse <- upscanInitiateConnector.initiateV1(Some(successRedirectUrl))
-        _                      <- uploadProgressTracker.requestUpload(uploadId, Reference(upscanInitiateResponse.fileReference.reference))
-      yield Ok(uploadFormView(upscanInitiateResponse))
-
-  val showV2: Action[AnyContent] =
-    Action.async: request =>
-      given MessagesRequestHeader = request
-      val uploadId           = UploadId.generate()
-      val successRedirectUrl = appConfig.uploadRedirectTargetBase + routes.UploadFormController.showResult(uploadId).url
       val errorRedirectUrl   = appConfig.uploadRedirectTargetBase + "/hello-world-upscan/hello-world/error"
       for
-        upscanInitiateResponse <- upscanInitiateConnector.initiateV2(Some(successRedirectUrl), Some(errorRedirectUrl))
+        upscanInitiateResponse <- upscanInitiateConnector.initiate(Some(successRedirectUrl), Some(errorRedirectUrl))
         _                      <- uploadProgressTracker.requestUpload(uploadId, Reference(upscanInitiateResponse.fileReference.reference))
       yield Ok(uploadFormView(upscanInitiateResponse))
 
