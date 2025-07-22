@@ -53,7 +53,7 @@ class UploadProgressTrackerSpec
       val reference = Reference("reference")
       val id = UploadId("upload-id")
       val downloadUrl = url"https://www.some-site.com/a-file.txt"
-      val expectedStatus = UploadStatus.UploadedSuccessfully("name", "mimeType", downloadUrl, size = Some(123), checksum = "blah")
+      val expectedStatus = UploadStatus.UploadedSuccessfully("name", "mimeType", downloadUrl, size = Some(123), checksum = "a142ed16d596494528e264ffdd5bfbd1188243e0ed1afc8768bcd5d76eb9c4f1")
 
       when(
         objectStoreClient.uploadFromUrl(
