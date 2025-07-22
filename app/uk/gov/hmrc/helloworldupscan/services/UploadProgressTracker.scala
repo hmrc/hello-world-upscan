@@ -27,8 +27,6 @@ import uk.gov.hmrc.objectstore.client.play.PlayObjectStoreClient
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
-import java.util.Base64
-
 @Singleton
 class UploadProgressTracker @Inject()(
   repository: UserSessionRepository,
@@ -53,15 +51,12 @@ class UploadProgressTracker @Inject()(
       .findByUploadId(id)
       .map(_.map(_.status))
 
-  private def hexToBytes(hex: String): Array[Byte] = 
-    hex.grouped(2).map(Integer.parseInt(_, 16).toByte).toArray
-
   private def transferToObjectStore(fileReference: Reference, uploadStatus: UploadStatus)
                                    (using HeaderCarrier): Future[Unit] =
     uploadStatus match
       case details: UploadStatus.UploadedSuccessfully =>
         val fileLocation = Path.File(s"${fileReference.value}/${details.name}")
-        val contentSha256 = Sha256Checksum(Base64.getEncoder().encodeToString(hexToBytes(details.checksum)))
+        val contentSha256 = Sha256Checksum.fromHex(details.checksum)
         osClient.uploadFromUrl(
             from            = url"${details.downloadUrl}",
             to              = fileLocation,
