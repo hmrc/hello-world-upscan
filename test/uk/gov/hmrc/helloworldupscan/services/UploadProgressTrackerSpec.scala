@@ -27,7 +27,7 @@ import uk.gov.hmrc.helloworldupscan.model.*
 import uk.gov.hmrc.helloworldupscan.repository.UserSessionRepository
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
 import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
-import uk.gov.hmrc.objectstore.client.{Md5Hash, ObjectSummaryWithMd5, Path, RetentionPeriod}
+import uk.gov.hmrc.objectstore.client.{Md5Hash, ObjectSummaryWithMd5, Path, RetentionPeriod, Sha256Checksum}
 import uk.gov.hmrc.objectstore.client.play.PlayObjectStoreClient
 
 import java.net.URL
@@ -53,7 +53,7 @@ class UploadProgressTrackerSpec
       val reference = Reference("reference")
       val id = UploadId("upload-id")
       val downloadUrl = url"https://www.some-site.com/a-file.txt"
-      val expectedStatus = UploadStatus.UploadedSuccessfully("name", "mimeType", downloadUrl, size = Some(123))
+      val expectedStatus = UploadStatus.UploadedSuccessfully("name", "mimeType", downloadUrl, size = Some(123), checksum = "blah")
 
       when(
         objectStoreClient.uploadFromUrl(
@@ -62,6 +62,7 @@ class UploadProgressTrackerSpec
           retentionPeriod = any[RetentionPeriod],
           contentType     = any[Option[String]],
           contentMd5      = any[Option[Md5Hash]],
+          contentSha256   = any[Option[Sha256Checksum]],
           owner           = any[String]
         )(using any[HeaderCarrier])
       ).thenReturn(

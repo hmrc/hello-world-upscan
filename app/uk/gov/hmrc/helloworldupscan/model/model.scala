@@ -31,7 +31,8 @@ object UploadStatus:
     name       : String,
     mimeType   : String,
     downloadUrl: URL,
-    size       : Option[Long]
+    size       : Option[Long],
+    checksum   : String
   ) extends UploadStatus
 
 case class UploadDetails(

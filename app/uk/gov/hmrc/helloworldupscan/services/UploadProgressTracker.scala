@@ -21,11 +21,13 @@ import uk.gov.hmrc.helloworldupscan.connectors.Reference
 import uk.gov.hmrc.helloworldupscan.model.*
 import uk.gov.hmrc.helloworldupscan.repository.UserSessionRepository
 import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps}
-import uk.gov.hmrc.objectstore.client.{Path, RetentionPeriod}
+import uk.gov.hmrc.objectstore.client.{Path, RetentionPeriod, Sha256Checksum}
 import uk.gov.hmrc.objectstore.client.play.PlayObjectStoreClient
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
+
+import java.util.Base64
 
 @Singleton
 class UploadProgressTracker @Inject()(
@@ -56,11 +58,13 @@ class UploadProgressTracker @Inject()(
     uploadStatus match
       case details: UploadStatus.UploadedSuccessfully =>
         val fileLocation = Path.File(s"${fileReference.value}/${details.name}")
+        val contentSha256 = Sha256Checksum(Base64.getEncoder().encodeToString(details.checksum.getBytes))
         osClient.uploadFromUrl(
-            from = url"${details.downloadUrl}",
-            to = fileLocation,
+            from            = url"${details.downloadUrl}",
+            to              = fileLocation,
             retentionPeriod = RetentionPeriod.OneDay,
-            contentType = Some(details.mimeType)
+            contentType     = Some(details.mimeType),
+            contentSha256   = Some(contentSha256)
           )
           .map(_ => ())
       case _ => Future.unit

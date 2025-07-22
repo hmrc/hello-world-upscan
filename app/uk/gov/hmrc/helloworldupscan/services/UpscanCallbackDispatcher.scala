@@ -34,7 +34,8 @@ class UpscanCallbackDispatcher @Inject() (sessionStorage: UploadProgressTracker)
             name        = s.uploadDetails.fileName,
             mimeType    = s.uploadDetails.fileMimeType,
             downloadUrl = s.downloadUrl,
-            size        = Some(s.uploadDetails.size)
+            size        = Some(s.uploadDetails.size),
+            checksum    = s.uploadDetails.checksum
           )
         case _: FailedCallbackBody =>
           UploadStatus.Failed
