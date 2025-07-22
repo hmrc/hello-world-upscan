@@ -48,7 +48,7 @@ class UserSessionRepositoryTest extends AnyWordSpec with Matchers:
         ObjectId.get(),
         UploadId.generate(),
         Reference("ABC"),
-        UploadStatus.UploadedSuccessfully("foo.txt", "text/plain", url"http:localhost:8080", size = None)
+        UploadStatus.UploadedSuccessfully("foo.txt", "text/plain", url"http:localhost:8080", size = None, checksum = "blah")
       )
 
       val serialized = UserSessionRepository.mongoFormat.writes(input)
@@ -61,7 +61,7 @@ class UserSessionRepositoryTest extends AnyWordSpec with Matchers:
         ObjectId.get(),
         UploadId.generate(),
         Reference("ABC"),
-        UploadStatus.UploadedSuccessfully("foo.txt", "text/plain", url"http:localhost:8080", size = Some(123456))
+        UploadStatus.UploadedSuccessfully("foo.txt", "text/plain", url"http:localhost:8080", size = Some(123456), checksum = "blah")
       )
 
       val serialized = UserSessionRepository.mongoFormat.writes(input)
