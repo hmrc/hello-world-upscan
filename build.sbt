@@ -5,7 +5,7 @@ lazy val microservice = Project("hello-world-upscan", file("."))
   .disablePlugins(JUnitXmlReportPlugin) //Required to prevent https://github.com/scalatest/scalatest/issues/1427
   .settings(
     majorVersion         := 0,
-    scalaVersion         := "3.3.5",
+    scalaVersion         := "3.3.6",
     libraryDependencies  ++= AppDependencies.compile ++ AppDependencies.test,
     playDefaultPort      := 9001,
     scalacOptions        += "-Wconf:msg=unused import&src=html/.*:s",
