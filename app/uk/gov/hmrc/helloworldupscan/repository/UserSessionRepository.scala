@@ -21,7 +21,6 @@ import org.bson.types.ObjectId
 import org.mongodb.scala.model.Filters.equal
 import org.mongodb.scala.model.Updates.set
 import org.mongodb.scala.model.{FindOneAndUpdateOptions, IndexModel, IndexOptions, Indexes}
-import org.mongodb.scala.SingleObservableFuture
 import play.api.libs.functional.syntax.*
 import play.api.libs.json.*
 import uk.gov.hmrc.helloworldupscan.connectors.Reference
