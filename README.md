@@ -15,7 +15,7 @@ And then navigate to one of the following:
  - http://localhost:9001/hello-world-upscan/hello-world
 
 
-This hello-world project is configured to allow uploading of the following filetypes: ".pdf,.doc,.docx,.xlsx,.xls,.png,.jpeg,.jpg,.txt", and specifies a maximum filesize of 512 bytes.
+This hello-world project is configured to allow uploading [all file types]("https://github.com/hmrc/upscan-app-config/blob/main/validator/AllowedMimeTypes.scala") with a maximum filesize of 2MB.
 
 ### Local `object-store` persistence
 
