@@ -34,7 +34,7 @@ case class UpscanInitiateRequest(
   successRedirect: Option[String] = None,
   errorRedirect  : Option[String] = None,
   minimumFileSize: Option[Int]    = None,
-  maximumFileSize: Option[Int]    = Some(512)
+  maximumFileSize: Option[Int]    = Some(2097152)
 )
 
 object UpscanInitiateRequest:
